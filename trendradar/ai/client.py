@@ -44,8 +44,8 @@ class AIClient:
         self.extra_params = config.get("EXTRA_PARAMS") or {}
         if not isinstance(self.extra_params, dict):
             print(
-                f"[AI] 配置错误: ai.extra_params 应为字典，"
-                f"当前为 {type(self.extra_params).__name__}，已忽略"
+                "[AI] Configuration error: ai.extra_params must be a mapping; "
+                f"received {type(self.extra_params).__name__}; ignored"
             )
             self.extra_params = {}
 
@@ -121,13 +121,13 @@ class AIClient:
             tuple: (是否有效, 错误信息)
         """
         if not self.model:
-            return False, "未配置 AI 模型（model）"
+            return False, "AI model is not configured (model)"
 
         if not self.api_key:
-            return False, "未配置 AI API Key，请在 config.yaml 或环境变量 AI_API_KEY 中设置"
+            return False, "AI API key is not configured. Set it in config.yaml or the AI_API_KEY environment variable."
 
         # 验证模型格式（应该包含 provider/model）
         if "/" not in self.model:
-            return False, f"模型格式错误: {self.model}，应为 'provider/model' 格式（如 'deepseek/deepseek-chat'）"
+            return False, f"Invalid model format: {self.model}; expected 'provider/model' (for example 'deepseek/deepseek-chat')"
 
         return True, ""

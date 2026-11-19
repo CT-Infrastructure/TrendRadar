@@ -52,7 +52,7 @@ class DataNotFoundError(MCPError):
         super().__init__(
             message=message,
             code="DATA_NOT_FOUND",
-            suggestion=suggestion or "请检查日期范围或等待爬取任务完成"
+            suggestion=suggestion or "Check the date range or wait for the crawler to finish"
         )
 
 
@@ -63,7 +63,7 @@ class InvalidParameterError(MCPError):
         super().__init__(
             message=message,
             code="INVALID_PARAMETER",
-            suggestion=suggestion or "请检查参数格式是否正确"
+            suggestion=suggestion or "Check the parameter format"
         )
 
 
@@ -74,7 +74,7 @@ class ConfigurationError(MCPError):
         super().__init__(
             message=message,
             code="CONFIGURATION_ERROR",
-            suggestion=suggestion or "请检查配置文件是否正确"
+            suggestion=suggestion or "Check the configuration file"
         )
 
 
@@ -83,9 +83,9 @@ class PlatformNotSupportedError(MCPError):
 
     def __init__(self, platform: str):
         supported = _load_supported_platforms()
-        suggestion = f"支持的平台: {', '.join(supported)}" if supported else "请检查 config/config.yaml 中的平台配置"
+        suggestion = f"Supported platforms: {', '.join(supported)}" if supported else "Check the platform settings in config/config.yaml"
         super().__init__(
-            message=f"平台 '{platform}' 不受支持",
+            message=f"Platform '{platform}' is not supported",
             code="PLATFORM_NOT_SUPPORTED",
             suggestion=suggestion
         )
@@ -98,7 +98,7 @@ class CrawlTaskError(MCPError):
         super().__init__(
             message=message,
             code="CRAWL_TASK_ERROR",
-            suggestion=suggestion or "请稍后重试或查看日志"
+            suggestion=suggestion or "Try again later or inspect the logs"
         )
 
 
@@ -107,7 +107,7 @@ class FileParseError(MCPError):
 
     def __init__(self, file_path: str, reason: str):
         super().__init__(
-            message=f"解析文件 {file_path} 失败: {reason}",
+            message=f"Parsing file {file_path} failed: {reason}",
             code="FILE_PARSE_ERROR",
-            suggestion="请检查文件格式是否正确"
+            suggestion="Check that the file format is correct"
         )

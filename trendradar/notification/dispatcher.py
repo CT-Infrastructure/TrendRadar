@@ -99,7 +99,7 @@ class NotificationDispatcher:
             return report_data, rss_items, rss_new_items, standalone_data
 
         import copy
-        print(f"[翻译] 开始翻译内容到 {self.translator.target_language}...")
+        print(f"[Translation] Translating content into {self.translator.target_language}...")
 
         scope = self.translator.scope
         display_regions = display_regions or {}
@@ -156,7 +156,7 @@ class NotificationDispatcher:
                     title_locations.append(("standalone_rss", feed_idx, item_idx))
 
         if not titles_to_translate:
-            print("[翻译] 没有需要翻译的内容")
+            print("[Translation] No content needs translation")
             return report_data, rss_items, rss_new_items, standalone_data
 
         total_count = len(titles_to_translate)
@@ -166,9 +166,9 @@ class NotificationDispatcher:
         num_batches = (total_count + batch_size - 1) // batch_size
 
         if num_batches > 1:
-            print(f"[翻译] 共 {total_count} 条标题待翻译，分 {num_batches} 批（每批 {batch_size} 条，间隔 {batch_interval}s）")
+            print(f"[Translation] Translating {total_count} headlines in {num_batches} batches ({batch_size} items each, {batch_interval}s interval)")
         else:
-            print(f"[翻译] 共 {total_count} 条标题待翻译")
+            print(f"[Translation] Translating {total_count} headlines")
 
         # 分批翻译
         from trendradar.ai.translator import BatchTranslationResult
@@ -182,7 +182,7 @@ class NotificationDispatcher:
             batch_texts = titles_to_translate[i:i + batch_size]
             batch_num = batch_count + 1
             if num_batches > 1:
-                print(f"[翻译] 第 {batch_num}/{num_batches} 批（{len(batch_texts)} 条）...")
+                print(f"[Translation] Batch {batch_num}/{num_batches} ({len(batch_texts)} items)...")
             result = self.translator.translate_batch(batch_texts)
             merged_result.results.extend(result.results)
             merged_result.success_count += result.success_count
@@ -190,39 +190,39 @@ class NotificationDispatcher:
 
             # debug 模式：输出每批的详细信息
             if self.config.get("DEBUG", False):
-                batch_label = f"[翻译][DEBUG][批次 {batch_num}]" if num_batches > 1 else "[翻译][DEBUG]"
+                batch_label = f"[Translation][DEBUG][Batch {batch_num}]" if num_batches > 1 else "[Translation][DEBUG]"
                 if result.prompt:
-                    print(f"{batch_label} === 发送给 AI 的 Prompt ===")
+                    print(f"{batch_label} === Prompt sent to AI ===")
                     print(result.prompt)
-                    print(f"{batch_label} === Prompt 结束 ===")
+                    print(f"{batch_label} === End of prompt ===")
                 if result.raw_response:
-                    print(f"{batch_label} === AI 原始响应 ===")
+                    print(f"{batch_label} === Raw AI response ===")
                     print(result.raw_response)
-                    print(f"{batch_label} === 响应结束 ===")
+                    print(f"{batch_label} === End of response ===")
                 expected = len(batch_texts)
                 if result.parsed_count != expected:
-                    print(f"{batch_label} ⚠️ 行数不匹配：期望 {expected} 条，AI 返回 {result.parsed_count} 条")
+                    print(f"{batch_label} ⚠️ Line count mismatch: expected {expected}, AI returned {result.parsed_count}")
                 unchanged_count = 0
                 for j, res in enumerate(result.results):
                     global_idx = i + j + 1
                     if not res.success and res.error:
-                        print(f"{batch_label} [{global_idx}] !! 失败: {res.error}")
+                        print(f"{batch_label} [{global_idx}] !! Failed: {res.error}")
                     elif res.original_text == res.translated_text:
                         unchanged_count += 1
                     else:
                         print(f"{batch_label} [{global_idx}] {res.original_text} => {res.translated_text}")
                 if unchanged_count > 0:
-                    print(f"{batch_label} （另有 {unchanged_count} 条未变化，已省略）")
+                    print(f"{batch_label} ({unchanged_count} unchanged items omitted)")
 
             batch_count += 1
 
         result = merged_result
 
         if result.success_count == 0:
-            print(f"[翻译] 翻译失败: {result.results[0].error if result.results else '未知错误'}")
+            print(f"[Translation] Translation failed: {result.results[0].error if result.results else 'Unknown error'}")
             return report_data, rss_items, rss_new_items, standalone_data
 
-        print(f"[翻译] 翻译完成: {result.success_count}/{result.total_count} 成功")
+        print(f"[Translation] Completed: {result.success_count}/{result.total_count} succeeded")
 
         # 回填翻译结果（仅在翻译文本非空时替换，防止空翻译覆盖原始标题）
         for i, (loc_type, idx1, idx2) in enumerate(title_locations):
@@ -390,7 +390,7 @@ class NotificationDispatcher:
 
         for i, account in enumerate(accounts):
             if account:
-                account_label = f"账号{i+1}" if len(accounts) > 1 else ""
+                account_label = f"Account {i+1}" if len(accounts) > 1 else ""
                 result = send_func(account, account_label=account_label, **kwargs)
                 results.append(result)
 
@@ -437,7 +437,7 @@ class NotificationDispatcher:
         )
 
         return self._send_to_multi_accounts(
-            channel_name="飞书",
+            channel_name="Feishu",
             config_value=self.config["FEISHU_WEBHOOK_URL"],
             send_func=lambda url, account_label: send_to_feishu(
                 webhook_url=url,
@@ -478,7 +478,7 @@ class NotificationDispatcher:
         )
 
         return self._send_to_multi_accounts(
-            channel_name="钉钉",
+            channel_name="DingTalk",
             config_value=self.config["DINGTALK_WEBHOOK_URL"],
             send_func=lambda url, account_label: send_to_dingtalk(
                 webhook_url=url,
@@ -518,7 +518,7 @@ class NotificationDispatcher:
         )
 
         return self._send_to_multi_accounts(
-            channel_name="企业微信",
+            channel_name="WeCom",
             config_value=self.config["WEWORK_WEBHOOK_URL"],
             send_func=lambda url, account_label: send_to_wework(
                 webhook_url=url,
@@ -581,7 +581,7 @@ class NotificationDispatcher:
             token = telegram_tokens[i]
             chat_id = telegram_chat_ids[i]
             if token and chat_id:
-                account_label = f"账号{i+1}" if len(telegram_tokens) > 1 else ""
+                account_label = f"Account {i+1}" if len(telegram_tokens) > 1 else ""
                 result = send_to_telegram(
                     bot_token=token,
                     chat_id=chat_id,
@@ -632,7 +632,7 @@ class NotificationDispatcher:
 
         if ntfy_tokens and len(ntfy_tokens) != len(ntfy_topics):
             print(
-                f"❌ ntfy 配置错误：topic 数量({len(ntfy_topics)})与 token 数量({len(ntfy_tokens)})不一致，跳过 ntfy 推送"
+                f"❌ Invalid ntfy configuration: topic count ({len(ntfy_topics)}) and token count ({len(ntfy_tokens)}) differ; skipping ntfy delivery"
             )
             return False
 
@@ -644,7 +644,7 @@ class NotificationDispatcher:
         for i, topic in enumerate(ntfy_topics):
             if topic:
                 token = get_account_at_index(ntfy_tokens, i, "") if ntfy_tokens else ""
-                account_label = f"账号{i+1}" if len(ntfy_topics) > 1 else ""
+                account_label = f"Account {i+1}" if len(ntfy_topics) > 1 else ""
                 result = send_to_ntfy(
                     server_url=ntfy_server_url,
                     topic=topic,
@@ -772,7 +772,7 @@ class NotificationDispatcher:
         if not urls:
             return False
 
-        urls = limit_accounts(urls, self.max_accounts, "通用Webhook")
+        urls = limit_accounts(urls, self.max_accounts, "Generic webhook")
         results = []
 
         for i, url in enumerate(urls):
@@ -786,7 +786,7 @@ class NotificationDispatcher:
                 elif len(templates) == 1:
                     template = templates[0]
 
-            account_label = f"账号{i+1}" if len(urls) > 1 else ""
+            account_label = f"Account {i+1}" if len(urls) > 1 else ""
 
             result = send_to_generic_webhook(
                 webhook_url=url,

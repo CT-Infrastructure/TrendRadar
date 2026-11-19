@@ -11,25 +11,25 @@ from trendradar.context import AppContext
 def _build_test_report_data(ctx: AppContext) -> Dict:
     now = ctx.get_time()
     time_display = now.strftime("%H:%M")
-    title = f"TrendRadar 通知测试消息（{now.strftime('%Y-%m-%d %H:%M:%S')}）"
+    title = f"TrendRadar test notification ({now.strftime('%Y-%m-%d %H:%M:%S')})"
 
     return {
         "stats": [
             {
-                "word": "连通性测试",
+                "word": "Connectivity test",
                 "count": 1,
                 "titles": [
                     {
                         "title": title,
                         "source_name": "TrendRadar",
-                        "url": "https://github.com/sansan0/TrendRadar",
+                        "url": "https://github.com/CT-Infrastructure/TrendRadar",
                         "mobile_url": "",
                         "ranks": [1],
                         "rank_threshold": ctx.rank_threshold,
                         "count": 1,
                         "is_new": True,
                         "time_display": time_display,
-                        "matched_keyword": "连通性测试",
+                        "matched_keyword": "Connectivity test",
                     }
                 ],
             }
@@ -47,18 +47,18 @@ def _create_test_html_file(ctx: AppContext) -> Optional[str]:
         output_dir.mkdir(parents=True, exist_ok=True)
         html_path = output_dir / f"notification_test_{ctx.format_time()}.html"
         html_content = f"""<!DOCTYPE html>
-<html lang="zh-CN">
-<head><meta charset="UTF-8"><title>TrendRadar 通知测试</title></head>
+<html lang="en">
+<head><meta charset="UTF-8"><title>TrendRadar Notification Test</title></head>
 <body>
-<h2>TrendRadar 通知连通性测试</h2>
-<p>测试时间：{now.strftime('%Y-%m-%d %H:%M:%S')} ({ctx.timezone})</p>
-<p>这是一条测试消息，用于验证邮件渠道是否可达。</p>
+<h2>TrendRadar Notification Connectivity Test</h2>
+<p>Test time: {now.strftime('%Y-%m-%d %H:%M:%S')} ({ctx.timezone})</p>
+<p>This test message checks whether the email channel can be reached.</p>
 </body>
 </html>"""
         html_path.write_text(html_content, encoding="utf-8")
         return str(html_path)
     except Exception as e:
-        print(f"[测试通知] 创建测试 HTML 失败: {e}")
+        print(f"[Test notification] Failed to create test HTML: {e}")
         return None
 
 
@@ -83,7 +83,7 @@ def run_test_notification(config: Dict) -> bool:
             ]
         )
         if not has_notification:
-            print("未检测到可用通知渠道，请先在 config.yaml 或环境变量中配置。")
+            print("No notification channels available. Configure one in config.yaml or environment variables first.")
             return False
 
         test_config = copy.deepcopy(config)
@@ -104,7 +104,7 @@ def run_test_notification(config: Dict) -> bool:
 
         proxy_url = test_config.get("DEFAULT_PROXY", "") if test_config.get("USE_PROXY") else None
         if proxy_url:
-            print("[测试通知] 检测到代理配置，将使用代理发送")
+            print("[Test notification] Proxy detected; sending through the proxy")
 
         dispatcher = NotificationDispatcher(
             config=test_config,
@@ -117,19 +117,19 @@ def run_test_notification(config: Dict) -> bool:
         html_file_path = _create_test_html_file(ctx)
 
         print("=" * 60)
-        print("通知连通性测试")
+        print("Notification connectivity test")
         print("=" * 60)
 
         results = dispatcher.dispatch_all(
             report_data=report_data,
-            report_type="通知连通性测试",
+            report_type="Notification Test",
             proxy_url=proxy_url,
             mode="daily",
             html_file_path=html_file_path,
         )
 
         if not results:
-            print("没有可测试的有效通知渠道（可能配置不完整）。")
+            print("No valid notification channels to test (configuration may be incomplete).")
             return False
 
         print("-" * 60)
@@ -137,12 +137,12 @@ def run_test_notification(config: Dict) -> bool:
         for channel, ok in results.items():
             if ok:
                 success_count += 1
-                print(f"✅ {channel}: 测试成功")
+                print(f"✅ {channel}: Test succeeded")
             else:
-                print(f"❌ {channel}: 测试失败")
+                print(f"❌ {channel}: Test failed")
 
         print("-" * 60)
-        print(f"测试结果: {success_count}/{len(results)} 个渠道成功")
+        print(f"Test results: {success_count}/{len(results)} channels succeeded")
         return success_count > 0
     finally:
         ctx.cleanup()

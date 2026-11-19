@@ -43,7 +43,7 @@ class RSSParser:
             max_summary_length: 摘要最大长度
         """
         if not HAS_FEEDPARSER:
-            raise ImportError("RSS 解析需要安装 feedparser: pip install feedparser")
+            raise ImportError("RSS parsing requires feedparser: pip install feedparser")
 
         self.max_summary_length = max_summary_length
 
@@ -66,7 +66,7 @@ class RSSParser:
         feed = feedparser.parse(content)
 
         if feed.bozo and not feed.entries:
-            raise ValueError(f"RSS 解析失败 ({feed_url}): {feed.bozo_exception}")
+            raise ValueError(f"RSS parsing failed ({feed_url}): {feed.bozo_exception}")
 
         items = []
         for entry in feed.entries:
@@ -109,7 +109,7 @@ class RSSParser:
         try:
             data = json.loads(content)
         except json.JSONDecodeError as e:
-            raise ValueError(f"JSON Feed 解析失败 ({feed_url}): {e}")
+            raise ValueError(f"JSON Feed parsing failed ({feed_url}): {e}")
 
         items_data = data.get("items", [])
         if not items_data:

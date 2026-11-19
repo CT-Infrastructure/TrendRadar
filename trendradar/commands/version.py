@@ -24,11 +24,11 @@ def _compare_version(local: str, remote: str) -> str:
     remote_tuple = _parse_version(remote)
 
     if local_tuple < remote_tuple:
-        return "⚠️ 需要更新"
+        return "⚠️ Update available"
     elif local_tuple > remote_tuple:
-        return "🔮 超前版本"
+        return "🔮 Ahead of release"
     else:
-        return "✅ 已是最新"
+        return "✅ Up to date"
 
 
 def _fetch_remote_version(version_url: str, proxy_url: Optional[str] = None) -> Optional[str]:
@@ -47,7 +47,7 @@ def _parse_config_versions(content: str) -> Dict[str, str]:
             name, version = line.split("=", 1)
             versions[name.strip()] = version.strip()
     except Exception as e:
-        print(f"[版本检查] 解析配置版本失败: {e}")
+        print(f"[Version check] Failed to parse configuration versions: {e}")
     return versions
 
 
@@ -71,24 +71,24 @@ def check_all_versions(
             remote_config_versions = _parse_config_versions(content)
 
     print("=" * 60)
-    print("版本检查")
+    print("Version check")
     print("=" * 60)
 
     if remote_version:
-        print(f"远程程序版本: {remote_version}")
+        print(f"Remote application version: {remote_version}")
     else:
-        print("远程程序版本: 获取失败")
+        print("Remote application version: unavailable")
 
     if configs_version_url:
         if remote_config_versions:
-            print(f"远程配置清单: 获取成功 ({len(remote_config_versions)} 个文件)")
+            print(f"Remote configuration manifest: fetched ({len(remote_config_versions)} files)")
         else:
-            print("远程配置清单: 获取失败或为空")
+            print("Remote configuration manifest: unavailable or empty")
 
     print("-" * 60)
 
-    program_status = _compare_version(__version__, remote_version) if remote_version else "(无法比较)"
-    print(f"  主程序版本: {__version__} {program_status}")
+    program_status = _compare_version(__version__, remote_version) if remote_version else "(comparison unavailable)"
+    print(f"  Application version: {__version__} {program_status}")
 
     config_files = [
         Path("config/config.yaml"),
@@ -103,7 +103,7 @@ def check_all_versions(
 
     for config_file in config_files:
         if not config_file.exists():
-            print(f"  {config_file.name}: 文件不存在")
+            print(f"  {config_file.name}: File does not exist")
             continue
 
         try:
@@ -124,11 +124,11 @@ def check_all_versions(
                         status = _compare_version(local_version, target_remote_version)
                         print(f"  {config_file.name}: {local_version} {status}")
                     else:
-                        print(f"  {config_file.name}: {local_version} (未找到远程版本)")
+                        print(f"  {config_file.name}: {local_version} (remote version not found)")
                 else:
-                    print(f"  {config_file.name}: 未找到本地版本号")
+                    print(f"  {config_file.name}: Local version not found")
         except Exception as e:
-            print(f"  {config_file.name}: 读取失败 - {e}")
+            print(f"  {config_file.name}: Read failed - {e}")
 
     print("=" * 60)
 

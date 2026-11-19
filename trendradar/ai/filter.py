@@ -52,15 +52,15 @@ class AIFilter:
         # 加载提示词模板
         self.classify_system, self.classify_user = load_prompt_template(
             filter_config.get("PROMPT_FILE", "ai_filter_prompt.txt"),
-            config_subdir="ai_filter", label="AI筛选",
+            config_subdir="ai_filter", label="AI Filter",
         )
         self.extract_system, self.extract_user = load_prompt_template(
             filter_config.get("EXTRACT_PROMPT_FILE", "ai_filter_extract_prompt.txt"),
-            config_subdir="ai_filter", label="AI筛选",
+            config_subdir="ai_filter", label="AI Filter",
         )
         self.update_tags_system, self.update_tags_user = load_prompt_template(
             filter_config.get("UPDATE_TAGS_PROMPT_FILE", "update_tags_prompt.txt"),
-            config_subdir="ai_filter", label="AI筛选",
+            config_subdir="ai_filter", label="AI Filter",
         )
 
     def compute_interests_hash(self, interests_content: str, filename: str = "ai_interests.txt") -> str:
@@ -93,25 +93,25 @@ class AIFilter:
             filename = configured_file
             interests_path = config_dir / "custom" / "ai" / filename
             if not interests_path.exists():
-                print(f"[AI筛选] 自定义兴趣描述文件不存在: {filename}")
-                print(f"[AI筛选]   已查找: {interests_path}")
+                print(f"[AI Filter] Custom interests file does not exist: {filename}")
+                print(f"[AI Filter]   Searched: {interests_path}")
                 return None
         else:
             # 默认兴趣文件：固定使用 config/ai_interests.txt
             filename = "ai_interests.txt"
             interests_path = config_dir / filename
             if not interests_path.exists():
-                print(f"[AI筛选] 默认兴趣描述文件不存在: {filename}")
-                print(f"[AI筛选]   已查找: {interests_path}")
+                print(f"[AI Filter] Default interests file does not exist: {filename}")
+                print(f"[AI Filter]   Searched: {interests_path}")
                 return None
 
         if not interests_path.exists():
-            print(f"[AI筛选] 兴趣描述文件不存在: {interests_path}")
+            print(f"[AI Filter] Interests file does not exist: {interests_path}")
             return None
 
         content = interests_path.read_text(encoding="utf-8").strip()
         if not content:
-            print("[AI筛选] 兴趣描述文件为空")
+            print("[AI Filter] Interests file is empty")
             return None
 
         return content
@@ -127,7 +127,7 @@ class AIFilter:
             [{"tag": str, "description": str}, ...]
         """
         if not self.extract_user:
-            print("[AI筛选] 标签提取提示词模板为空")
+            print("[AI Filter] Tag extraction prompt is empty")
             return []
 
         user_prompt = self.extract_user.replace("{interests_content}", interests_content)
@@ -138,44 +138,44 @@ class AIFilter:
         messages.append({"role": "user", "content": user_prompt})
 
         if self.debug:
-            print(f"\n[AI筛选][DEBUG] === 标签提取 Prompt ===")
+            print(f"\n[AI Filter][DEBUG] === Tag extraction prompt ===")
             for m in messages:
                 print(f"[{m['role']}]\n{m['content']}")
-            print(f"[AI筛选][DEBUG] === Prompt 结束 ===")
+            print(f"[AI Filter][DEBUG] === End of prompt ===")
 
         try:
             response = self.client.chat(messages)
 
             if self.debug:
-                print(f"\n[AI筛选][DEBUG] === 标签提取 AI 原始响应 ===")
+                print(f"\n[AI Filter][DEBUG] === Raw AI tag extraction response ===")
                 # 尝试格式化 JSON 便于阅读
                 self._print_formatted_json(response)
-                print(f"[AI筛选][DEBUG] === 响应结束 ===")
+                print(f"[AI Filter][DEBUG] === End of response ===")
 
             tags = self._parse_tags_response(response)
-            print(f"[AI筛选] 提取到 {len(tags)} 个标签")
+            print(f"[AI Filter] Extracted {len(tags)} tags")
             for t in tags:
                 print(f"   {t['tag']}: {t.get('description', '')}")
 
             if self.debug:
                 json_str = self._extract_json(response)
                 if not json_str:
-                    print(f"[AI筛选][DEBUG] 无法从响应中提取 JSON")
+                    print(f"[AI Filter][DEBUG] Could not extract JSON from the response")
                 else:
                     raw_data = json.loads(json_str)
                     raw_tags = raw_data.get("tags", [])
                     skipped = len(raw_tags) - len(tags)
                     if skipped > 0:
-                        print(f"[AI筛选][DEBUG] 原始标签 {len(raw_tags)} 个，有效 {len(tags)} 个，跳过 {skipped} 个（缺少 tag 字段或格式无效）")
+                        print(f"[AI Filter][DEBUG] Raw tags: {len(raw_tags)}; valid: {len(tags)}; skipped: {skipped} (missing tag field or invalid format)")
 
             return tags
         except json.JSONDecodeError as e:
-            print(f"[AI筛选] 标签提取失败: JSON 解析错误: {e}")
+            print(f"[AI Filter] Tag extraction failed: JSON parse error: {e}")
             if self.debug:
-                print(f"[AI筛选][DEBUG] 尝试解析的 JSON 内容: {self._extract_json(response) if response else '(空响应)'}")
+                print(f"[AI Filter][DEBUG] JSON content passed to the parser: {self._extract_json(response) if response else '(empty response)'}")
             return []
         except Exception as e:
-            print(f"[AI筛选] 标签提取失败: {type(e).__name__}: {e}")
+            print(f"[AI Filter] Tag extraction failed: {type(e).__name__}: {e}")
             return []
 
     def update_tags(self, old_tags: List[Dict], interests_content: str) -> Optional[Dict]:
@@ -194,7 +194,7 @@ class AIFilter:
             失败返回 None
         """
         if not self.update_tags_user:
-            print("[AI筛选] 标签更新提示词模板为空，回退到重新提取")
+            print("[AI Filter] Tag update prompt is empty; extracting tags again")
             return None
 
         # 构造旧标签 JSON
@@ -215,18 +215,18 @@ class AIFilter:
         messages.append({"role": "user", "content": user_prompt})
 
         if self.debug:
-            print(f"\n[AI筛选][DEBUG] === 标签更新 Prompt ===")
+            print(f"\n[AI Filter][DEBUG] === Tag update prompt ===")
             for m in messages:
                 print(f"[{m['role']}]\n{m['content']}")
-            print(f"[AI筛选][DEBUG] === Prompt 结束 ===")
+            print(f"[AI Filter][DEBUG] === End of prompt ===")
 
         try:
             response = self.client.chat(messages)
 
             if self.debug:
-                print(f"\n[AI筛选][DEBUG] === 标签更新 AI 原始响应 ===")
+                print(f"\n[AI Filter][DEBUG] === Raw AI tag update response ===")
                 self._print_formatted_json(response)
-                print(f"[AI筛选][DEBUG] === 响应结束 ===")
+                print(f"[AI Filter][DEBUG] === End of response ===")
 
             result = self._parse_update_tags_response(response)
             if result is None:
@@ -236,18 +236,18 @@ class AIFilter:
             add_count = len(result.get("add", []))
             remove_count = len(result.get("remove", []))
             ratio = result.get("change_ratio", 0)
-            print(f"[AI筛选] AI 标签更新方案: 保留 {keep_count}, 新增 {add_count}, 移除 {remove_count}, change_ratio={ratio:.2f}")
+            print(f"[AI Filter] AI tag update: keep {keep_count}, add {add_count}, remove {remove_count}, change_ratio={ratio:.2f}")
 
             return result
         except Exception as e:
-            print(f"[AI筛选] 标签更新失败: {type(e).__name__}: {e}")
+            print(f"[AI Filter] Tag update failed: {type(e).__name__}: {e}")
             return None
 
     def _parse_update_tags_response(self, response: str) -> Optional[Dict]:
         """解析标签更新的 AI 响应"""
         json_str = self._extract_json(response)
         if not json_str:
-            print("[AI筛选] 无法从标签更新响应中提取 JSON")
+            print("[AI Filter] Could not extract JSON from the tag update response")
             return None
 
         data = json.loads(json_str)
@@ -329,7 +329,7 @@ class AIFilter:
             return []
 
         if not self.classify_user:
-            print("[AI筛选] 分类提示词模板为空")
+            print("[AI Filter] Classification prompt is empty")
             return None
 
         # 构建标签列表文本
@@ -357,7 +357,7 @@ class AIFilter:
         messages.append({"role": "user", "content": user_prompt})
 
         if self.debug:
-            print(f"\n[AI筛选][DEBUG] === 分类 Prompt (标题数={len(titles)}, 标签={len(tags)}) ===")
+            print(f"\n[AI Filter][DEBUG] === Classification prompt (headlines={len(titles)}, tags={len(tags)}) ===")
             for m in messages:
                 role = m['role']
                 content = m['content']
@@ -369,18 +369,18 @@ class AIFilter:
                     head = lines[:15]
                     tail = lines[-10:]
                     omitted = len(lines) - 25
-                    truncated = '\n'.join(head) + f'\n... (省略 {omitted} 行) ...\n' + '\n'.join(tail)
+                    truncated = '\n'.join(head) + f'\n... (Omitted {omitted} lines) ...\n' + '\n'.join(tail)
                     print(f"[{role}]\n{truncated}")
                 else:
                     print(f"[{role}]\n{content}")
-            print(f"[AI筛选][DEBUG] === Prompt 结束 (长度: {sum(len(m['content']) for m in messages)} 字符) ===")
+            print(f"[AI Filter][DEBUG] === End of prompt (length: {sum(len(m['content']) for m in messages)} characters) ===")
 
         try:
             response = self.client.chat(messages)
 
             return self._parse_classify_response(response, titles, tags)
         except Exception as e:
-            print(f"[AI筛选] 分类请求失败: {type(e).__name__}: {e}")
+            print(f"[AI Filter] Classification request failed: {type(e).__name__}: {e}")
             return None
 
     def _parse_classify_response(
@@ -400,20 +400,20 @@ class AIFilter:
         json_str = self._extract_json(response)
         if not json_str:
             if self.debug:
-                print(f"[AI筛选][DEBUG] 无法从分类响应中提取 JSON，原始响应前 500 字符: {(response or '')[:500]}")
+                print(f"[AI Filter][DEBUG] Could not extract JSON from the classification response; first 500 characters: {(response or '')[:500]}")
             return []
 
         try:
             data = json.loads(json_str)
         except json.JSONDecodeError as e:
             if self.debug:
-                print(f"[AI筛选][DEBUG] 分类响应 JSON 解析失败: {e}")
-                print(f"[AI筛选][DEBUG] 提取的 JSON 文本前 500 字符: {json_str[:500]}")
+                print(f"[AI Filter][DEBUG] Classification response JSON parsing failed: {e}")
+                print(f"[AI Filter][DEBUG] First 500 characters of the extracted JSON: {json_str[:500]}")
             return []
 
         if not isinstance(data, list):
             if self.debug:
-                print(f"[AI筛选][DEBUG] 分类响应顶层不是数组，实际类型: {type(data).__name__}")
+                print(f"[AI Filter][DEBUG] Classification response must be an array; received: {type(data).__name__}")
             return []
 
         # 构建 id 映射
@@ -492,14 +492,14 @@ class AIFilter:
 
         if self.debug:
             ai_returned = len(data)
-            print(f"[AI筛选][DEBUG] --- 分类解析结果 ---")
-            print(f"[AI筛选][DEBUG] AI 返回 {ai_returned} 条, 有效 {len(results)} 条 (每条新闻仅保留最高分 tag)")
+            print(f"[AI Filter][DEBUG] --- Parsed classification results ---")
+            print(f"[AI Filter][DEBUG] AI returned {ai_returned} items; valid: {len(results)} items (only the highest-scoring tag is kept for each article)")
             if skipped_empty > 0:
-                print(f"[AI筛选][DEBUG] 跳过空 tags: {skipped_empty} 条")
+                print(f"[AI Filter][DEBUG] Skipped empty tags: {skipped_empty} items")
             if skipped_news_ids > 0:
-                print(f"[AI筛选][DEBUG] !! 跳过无效 news_id: {skipped_news_ids} 条")
+                print(f"[AI Filter][DEBUG] !! Skipped invalid news_id: {skipped_news_ids} items")
             if skipped_tag_ids > 0:
-                print(f"[AI筛选][DEBUG] !! 跳过无效 tag_id: {skipped_tag_ids} 条")
+                print(f"[AI Filter][DEBUG] !! Skipped invalid tag_id: {skipped_tag_ids} items")
 
             # 按标签汇总
             tag_summary: Dict[int, List[str]] = {}
@@ -513,7 +513,7 @@ class AIFilter:
 
             for tid, items in tag_summary.items():
                 tname = tag_name_map.get(tid, f"tag_{tid}")
-                print(f"[AI筛选][DEBUG] 标签「{tname}」匹配 {len(items)} 条:")
+                print(f"[AI Filter][DEBUG] Tag [{tname}] matched {len(items)} items:")
                 for line in items:
                     print(line)
 
@@ -543,7 +543,7 @@ class AIFilter:
     def _print_formatted_json(self, response: str) -> None:
         """格式化打印 AI 响应中的 JSON，便于 debug 阅读"""
         if not response:
-            print("(空响应)")
+            print("(empty response)")
             return
 
         json_str = self._extract_json(response)

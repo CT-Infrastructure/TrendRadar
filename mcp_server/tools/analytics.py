@@ -141,8 +141,8 @@ class AnalyticsTools:
             # 参数验证
             if insight_type not in ["platform_compare", "platform_activity", "keyword_cooccur"]:
                 raise InvalidParameterError(
-                    f"无效的洞察类型: {insight_type}",
-                    suggestion="支持的类型: platform_compare, platform_activity, keyword_cooccur"
+                    f"Invalid insight type: {insight_type}",
+                    suggestion="Supported types: platform_compare, platform_activity, keyword_cooccur"
                 )
 
             # 根据洞察类型调用相应方法
@@ -220,8 +220,8 @@ class AnalyticsTools:
 
             if analysis_type not in ["trend", "lifecycle", "viral", "predict"]:
                 raise InvalidParameterError(
-                    f"无效的分析类型: {analysis_type}",
-                    suggestion="支持的类型: trend, lifecycle, viral, predict"
+                    f"Invalid analysis type: {analysis_type}",
+                    suggestion="Supported types: trend, lifecycle, viral, predict"
                 )
 
             # 根据分析类型调用相应方法
@@ -314,8 +314,8 @@ class AnalyticsTools:
             if granularity != "day":
                 from ..utils.errors import InvalidParameterError
                 raise InvalidParameterError(
-                    f"不支持的粒度参数: {granularity}",
-                    suggestion="当前仅支持 'day' 粒度，因为底层数据按天聚合"
+                    f"Unsupported granularity: {granularity}",
+                    suggestion="Only 'day' granularity is supported because data is aggregated daily"
                 )
 
             # 处理日期范围（不指定时默认最近7天）
@@ -390,7 +390,7 @@ class AnalyticsTools:
             return {
                 "success": True,
                 "summary": {
-                    "description": f"话题「{topic}」的热度趋势分析",
+                    "description": f"Popularity trend for topic {topic}",
                     "topic": topic,
                     "date_range": {
                         "start": start_date.strftime("%Y-%m-%d"),
@@ -403,7 +403,7 @@ class AnalyticsTools:
                     "peak_count": max_count,
                     "peak_time": peak_time,
                     "change_rate": round(change_rate, 2),
-                    "trend_direction": "上升" if change_rate > 10 else "下降" if change_rate < -10 else "稳定"
+                    "trend_direction": "Rising" if change_rate > 10 else "Falling" if change_rate < -10 else "Stable"
                 },
                 "data": trend_data
             }
@@ -632,7 +632,7 @@ class AnalyticsTools:
             return {
                 "success": True,
                 "summary": {
-                    "description": "关键词共现分析结果",
+                    "description": "Keyword co-occurrence analysis results",
                     "total": len(result_pairs),
                     "min_frequency": min_frequency,
                     "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -759,10 +759,10 @@ class AnalyticsTools:
                 current_date += timedelta(days=1)
 
             if not all_news_items:
-                time_desc = "今天" if start_date == end_date else f"{start_date.strftime('%Y-%m-%d')} 至 {end_date.strftime('%Y-%m-%d')}"
+                time_desc = "Today" if start_date == end_date else f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
                 raise DataNotFoundError(
-                    f"未找到相关新闻（{time_desc}）",
-                    suggestion="请尝试其他话题、日期范围或平台"
+                    f"No related news found ({time_desc})",
+                    suggestion="Try a different topic, date range, or platform"
                 )
 
             # 去重（同一标题只保留一次）
@@ -799,13 +799,13 @@ class AnalyticsTools:
             if start_date == end_date:
                 time_range_desc = start_date.strftime("%Y-%m-%d")
             else:
-                time_range_desc = f"{start_date.strftime('%Y-%m-%d')} 至 {end_date.strftime('%Y-%m-%d')}"
+                time_range_desc = f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
 
             result = {
                 "success": True,
                 "method": "ai_prompt_generation",
                 "summary": {
-                    "description": "情感分析数据和AI提示词",
+                    "description": "Sentiment analysis data and AI prompt",
                     "total_found": len(deduplicated_news),
                     "returned": len(selected_news),
                     "requested_limit": limit,
@@ -817,14 +817,14 @@ class AnalyticsTools:
                 },
                 "ai_prompt": ai_prompt,
                 "data": selected_news,
-                "usage_note": "请将 ai_prompt 字段的内容发送给 AI 进行情感分析"
+                "usage_note": "Send the ai_prompt field to an AI model for sentiment analysis"
             }
 
             # 如果返回数量少于请求数量，增加提示
             if len(selected_news) < limit and len(deduplicated_news) >= limit:
-                result["note"] = "返回数量少于请求数量是因为去重逻辑（同一标题在不同平台只保留一次）"
+                result["note"] = "Fewer results may be returned after deduplication: the same title is kept once across platforms"
             elif len(deduplicated_news) < limit:
-                result["note"] = f"在指定时间范围内仅找到 {len(deduplicated_news)} 条匹配的新闻"
+                result["note"] = f"Found only {len(deduplicated_news)} matching articles in this date range"
 
             return result
 
@@ -870,41 +870,41 @@ class AnalyticsTools:
 
         # 1. 任务说明
         if topic:
-            prompt_parts.append(f"请分析以下关于「{topic}」的新闻标题的情感倾向。")
+            prompt_parts.append(f"Analyze the sentiment of the following headlines about {topic}.")
         else:
-            prompt_parts.append("请分析以下新闻标题的情感倾向。")
+            prompt_parts.append("Analyze the sentiment of the following news headlines.")
 
         prompt_parts.append("")
-        prompt_parts.append("分析要求：")
-        prompt_parts.append("1. 识别每条新闻的情感倾向（正面/负面/中性）")
-        prompt_parts.append("2. 统计各情感类别的数量和百分比")
-        prompt_parts.append("3. 分析不同平台的情感差异")
-        prompt_parts.append("4. 总结整体情感趋势")
-        prompt_parts.append("5. 列举典型的正面和负面新闻样本")
+        prompt_parts.append("Analysis requirements:")
+        prompt_parts.append("1. Classify each headline as positive, negative, or neutral.")
+        prompt_parts.append("2. Count each sentiment category and calculate its percentage.")
+        prompt_parts.append("3. Compare sentiment across platforms.")
+        prompt_parts.append("4. Summarize the overall sentiment trend.")
+        prompt_parts.append("5. Provide representative positive and negative headlines.")
         prompt_parts.append("")
 
-        # 2. 数据概览
-        prompt_parts.append(f"数据概览：")
-        prompt_parts.append(f"- 总新闻数：{len(news_data)}")
-        prompt_parts.append(f"- 覆盖平台：{len(platform_news)}")
+        # 2. Data overview
+        prompt_parts.append(f"Data overview:")
+        prompt_parts.append(f"- Total articles: {len(news_data)}")
+        prompt_parts.append(f"- Platforms covered: {len(platform_news)}")
 
         # 时间范围
         dates = set(item.get("date", "") for item in news_data if item.get("date"))
         if dates:
             date_list = sorted(dates)
             if len(date_list) == 1:
-                prompt_parts.append(f"- 时间范围：{date_list[0]}")
+                prompt_parts.append(f"- Date range: {date_list[0]}")
             else:
-                prompt_parts.append(f"- 时间范围：{date_list[0]} 至 {date_list[-1]}")
+                prompt_parts.append(f"- Date range: {date_list[0]} to {date_list[-1]}")
 
         prompt_parts.append("")
 
         # 3. 按平台展示新闻
-        prompt_parts.append("新闻列表（按平台分类，已按重要性排序）：")
+        prompt_parts.append("Headlines grouped by platform and ranked by importance:")
         prompt_parts.append("")
 
         for platform, items in sorted(platform_news.items()):
-            prompt_parts.append(f"【{platform}】({len(items)} 条)")
+            prompt_parts.append(f"【{platform}】({len(items)} articles)")
             for i, item in enumerate(items, 1):
                 title = item["title"]
                 date_str = f" [{item['date']}]" if item.get("date") else ""
@@ -912,25 +912,25 @@ class AnalyticsTools:
             prompt_parts.append("")
 
         # 4. 输出格式说明
-        prompt_parts.append("请按以下格式输出分析结果：")
+        prompt_parts.append("Return the analysis in English using this format:")
         prompt_parts.append("")
-        prompt_parts.append("## 情感分布统计")
-        prompt_parts.append("- 正面：XX条 (XX%)")
-        prompt_parts.append("- 负面：XX条 (XX%)")
-        prompt_parts.append("- 中性：XX条 (XX%)")
+        prompt_parts.append("## Sentiment distribution")
+        prompt_parts.append("- Positive: XX articles (XX%)")
+        prompt_parts.append("- Negative: XX articles (XX%)")
+        prompt_parts.append("- Neutral: XX articles (XX%)")
         prompt_parts.append("")
-        prompt_parts.append("## 平台情感对比")
-        prompt_parts.append("[各平台的情感倾向差异]")
+        prompt_parts.append("## Sentiment by platform")
+        prompt_parts.append("[Differences in sentiment across platforms]")
         prompt_parts.append("")
-        prompt_parts.append("## 整体情感趋势")
-        prompt_parts.append("[总体分析和关键发现]")
+        prompt_parts.append("## Overall sentiment trend")
+        prompt_parts.append("[Overall analysis and key findings]")
         prompt_parts.append("")
-        prompt_parts.append("## 典型样本")
-        prompt_parts.append("正面新闻样本：")
-        prompt_parts.append("[列举3-5条]")
+        prompt_parts.append("## Representative examples")
+        prompt_parts.append("Positive headlines:")
+        prompt_parts.append("[List 3-5 headlines]")
         prompt_parts.append("")
-        prompt_parts.append("负面新闻样本：")
-        prompt_parts.append("[列举3-5条]")
+        prompt_parts.append("Negative headlines:")
+        prompt_parts.append("[List 3-5 headlines]")
 
         return "\n".join(prompt_parts)
 
@@ -1013,14 +1013,14 @@ class AnalyticsTools:
 
             if not result_items:
                 raise DataNotFoundError(
-                    f"未找到相似度超过 {threshold} 的新闻",
-                    suggestion="请降低相似度阈值或尝试其他标题"
+                    f"No articles exceeded similarity threshold {threshold}",
+                    suggestion="Lower the similarity threshold or try a different title"
                 )
 
             result = {
                 "success": True,
                 "summary": {
-                    "description": "相似新闻搜索结果",
+                    "description": "Similar-news search results",
                     "total_found": len(similar_items),
                     "returned": len(result_items),
                     "requested_limit": limit,
@@ -1031,7 +1031,7 @@ class AnalyticsTools:
             }
 
             if len(similar_items) < limit:
-                result["note"] = f"相似度阈值 {threshold} 下仅找到 {len(similar_items)} 条相似新闻"
+                result["note"] = f"Found only {len(similar_items)} similar articles at similarity threshold {threshold}"
 
             return result
 
@@ -1090,8 +1090,8 @@ class AnalyticsTools:
 
             if entity_type and entity_type not in ["person", "location", "organization"]:
                 raise InvalidParameterError(
-                    f"无效的实体类型: {entity_type}",
-                    suggestion="支持的类型: person, location, organization"
+                    f"Invalid entity type: {entity_type}",
+                    suggestion="Supported types: person, location, organization"
                 )
 
             # 读取数据
@@ -1128,8 +1128,8 @@ class AnalyticsTools:
 
             if not related_news:
                 raise DataNotFoundError(
-                    f"未找到包含实体 '{entity}' 的新闻",
-                    suggestion="请尝试其他实体名称"
+                    f"No news found containing entity '{entity}'",
+                    suggestion="Try a different entity name"
                 )
 
             # 移除实体本身
@@ -1152,7 +1152,7 @@ class AnalyticsTools:
             return {
                 "success": True,
                 "summary": {
-                    "description": f"实体「{entity}」相关新闻",
+                    "description": f"News related to entity {entity}",
                     "entity": entity,
                     "entity_type": entity_type or "auto",
                     "total_found": len(related_news),
@@ -1212,8 +1212,8 @@ class AnalyticsTools:
             # 参数验证
             if report_type not in ["daily", "weekly"]:
                 raise InvalidParameterError(
-                    f"无效的报告类型: {report_type}",
-                    suggestion="支持的类型: daily, weekly"
+                    f"Invalid report type: {report_type}",
+                    suggestion="Supported types: daily, weekly"
                 )
 
             # 确定日期范围
@@ -1260,50 +1260,50 @@ class AnalyticsTools:
                 current_date += timedelta(days=1)
 
             # 生成报告
-            report_title = f"{'每日' if report_type == 'daily' else '每周'}新闻热点摘要"
-            date_str = f"{start_date.strftime('%Y-%m-%d')}" if report_type == "daily" else f"{start_date.strftime('%Y-%m-%d')} 至 {end_date.strftime('%Y-%m-%d')}"
+            report_title = f"{'Daily' if report_type == 'daily' else 'Weekly'} news digest"
+            date_str = f"{start_date.strftime('%Y-%m-%d')}" if report_type == "daily" else f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
 
             # 构建Markdown报告
             markdown = f"""# {report_title}
 
-**报告日期**: {date_str}
-**生成时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Report date**: {date_str}
+**Generated at**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 ---
 
-## 📊 数据概览
+## 📊 Data overview
 
-- **总新闻数**: {len(all_titles_list)}
-- **覆盖平台**: {len(all_platforms_news)}
-- **热门关键词数**: {len(all_keywords)}
+- **Total articles**: {len(all_titles_list)}
+- **Platforms covered**: {len(all_platforms_news)}
+- **Trending keywords**: {len(all_keywords)}
 
-## 🔥 TOP 10 热门话题
+## 🔥 Top 10 topics
 
 """
 
             # 添加TOP 10关键词
             for i, (keyword, count) in enumerate(all_keywords.most_common(10), 1):
-                markdown += f"{i}. **{keyword}** - 出现 {count} 次\n"
+                markdown += f"{i}. **{keyword}** - {count} occurrences\n"
 
             # 平台分析
-            markdown += "\n## 📱 平台活跃度\n\n"
+            markdown += "\n## 📱 Platform activity\n\n"
             sorted_platforms = sorted(all_platforms_news.items(), key=lambda x: x[1], reverse=True)
 
             for platform, count in sorted_platforms:
-                markdown += f"- **{platform}**: {count} 条新闻\n"
+                markdown += f"- **{platform}**: {count} articles\n"
 
             # 趋势变化（如果是周报）
             if report_type == "weekly":
-                markdown += "\n## 📈 趋势分析\n\n"
-                markdown += "本周热度持续的话题（样本数据）：\n\n"
+                markdown += "\n## 📈 Trend analysis\n\n"
+                markdown += "Topics with sustained attention this week (sample data):\n\n"
 
-                # 简单的趋势分析
+                # 简单的Trend analysis
                 top_keywords = [kw for kw, _ in all_keywords.most_common(5)]
                 for keyword in top_keywords:
-                    markdown += f"- **{keyword}**: 持续热门\n"
+                    markdown += f"- **{keyword}**: Sustained attention\n"
 
             # 添加样本新闻（按权重选择，确保确定性）
-            markdown += "\n## 📰 精选新闻样本\n\n"
+            markdown += "\n## 📰 Selected headlines\n\n"
 
             # 确定性选取：按标题的权重排序，取前5条
             # 这样相同输入总是返回相同结果
@@ -1328,7 +1328,7 @@ class AnalyticsTools:
                 for news in sample_news:
                     markdown += f"- [{news['platform']}] {news['title']}\n"
 
-            markdown += "\n---\n\n*本报告由 TrendRadar MCP 自动生成*\n"
+            markdown += "\n---\n\n*This report was generated automatically by TrendRadar MCP*\n"
 
             return {
                 "success": True,
@@ -1396,7 +1396,7 @@ class AnalyticsTools:
             else:
                 start_date = end_date = datetime.now()
 
-            # 统计各平台活跃度
+            # 统计各Platform activity
             platform_activity = defaultdict(lambda: {
                 "total_updates": 0,
                 "days_active": set(),
@@ -1568,10 +1568,10 @@ class AnalyticsTools:
             counts = [item["count"] for item in lifecycle_data]
 
             if not any(counts):
-                time_desc = f"{start_date.strftime('%Y-%m-%d')} 至 {end_date.strftime('%Y-%m-%d')}"
+                time_desc = f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
                 raise DataNotFoundError(
-                    f"在 {time_desc} 内未找到话题 '{topic}'",
-                    suggestion="请尝试其他话题或扩大时间范围"
+                    f"No news found for topic '{topic}' during {time_desc}",
+                    suggestion="Try a different topic or a wider date range"
                 )
 
             # 找到首次出现和最后出现
@@ -1592,23 +1592,23 @@ class AnalyticsTools:
             early_counts = counts[:3]    # 前3天
 
             if sum(recent_counts) > sum(early_counts):
-                lifecycle_stage = "上升期"
+                lifecycle_stage = "Growth phase"
             elif sum(recent_counts) < sum(early_counts) * 0.5:
-                lifecycle_stage = "衰退期"
+                lifecycle_stage = "Decline phase"
             elif max_count in recent_counts:
-                lifecycle_stage = "爆发期"
+                lifecycle_stage = "Breakout phase"
             else:
-                lifecycle_stage = "稳定期"
+                lifecycle_stage = "Stable phase"
 
-            # 分类：昙花一现 vs 持续热点
+            # 分类：Short-lived spike vs Sustained trend
             active_days = sum(1 for c in counts if c > 0)
 
             if active_days <= 2 and max_count > avg_count * 2:
-                topic_type = "昙花一现"
+                topic_type = "Short-lived spike"
             elif active_days >= total_days * 0.6:
-                topic_type = "持续热点"
+                topic_type = "Sustained trend"
             else:
-                topic_type = "周期性热点"
+                topic_type = "Periodic trend"
 
             return {
                 "success": True,
@@ -1734,14 +1734,14 @@ class AnalyticsTools:
                         "keyword": keyword,
                         "current_count": current_count,
                         "previous_count": previous_count,
-                        "growth_rate": round(growth_rate, 2) if growth_rate != float('inf') else "新话题",
+                        "growth_rate": round(growth_rate, 2) if growth_rate != float('inf') else "New topic",
                         "sample_titles": current_keyword_titles[keyword][:3],
-                        "alert_level": "高" if growth_rate > threshold * 2 else "中"
+                        "alert_level": "High" if growth_rate > threshold * 2 else "Medium"
                     })
 
             # 按增长率排序
             viral_topics.sort(
-                key=lambda x: x["current_count"] if x["growth_rate"] == "新话题" else x["growth_rate"],
+                key=lambda x: x["current_count"] if x["growth_rate"] == "New topic" else x["growth_rate"],
                 reverse=True
             )
 
@@ -1749,19 +1749,19 @@ class AnalyticsTools:
                 return {
                     "success": True,
                     "summary": {
-                        "description": "异常热度检测结果",
+                        "description": "Anomalous popularity detection results",
                         "total": 0,
                         "threshold": threshold,
                         "time_window": time_window
                     },
                     "data": [],
-                    "message": f"未检测到热度增长超过 {threshold} 倍的话题"
+                    "message": f"No topics exceeded a {threshold}x increase in popularity"
                 }
 
             return {
                 "success": True,
                 "summary": {
-                    "description": "异常热度检测结果",
+                    "description": "Anomalous popularity detection results",
                     "total": len(viral_topics),
                     "threshold": threshold,
                     "time_window": time_window,
@@ -1869,8 +1869,8 @@ class AnalyticsTools:
 
             except DataNotFoundError:
                 raise DataNotFoundError(
-                    "未找到今天的数据",
-                    suggestion="请等待爬虫任务完成"
+                    "No data found for today",
+                    suggestion="Wait for the crawler to finish"
                 )
 
             # 预测潜力话题
@@ -1913,7 +1913,7 @@ class AnalyticsTools:
                             "growth_rate": round(growth_rate * 100, 2),
                             "confidence": round(confidence, 2),
                             "trend_data": trend_data,
-                            "prediction": "上升趋势，可能成为热点",
+                            "prediction": "Rising trend; may become a trending topic",
                             "sample_titles": keyword_titles.get(keyword, [])[:3]
                         })
 
@@ -1926,7 +1926,7 @@ class AnalyticsTools:
             return {
                 "success": True,
                 "summary": {
-                    "description": "热点话题预测结果",
+                    "description": "Trending topic predictions",
                     "total": len(predicted_topics),
                     "returned": min(20, len(predicted_topics)),
                     "lookahead_hours": lookahead_hours,
@@ -1934,7 +1934,7 @@ class AnalyticsTools:
                     "prediction_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 },
                 "data": predicted_topics[:20],  # 返回TOP 20
-                "note": "预测基于历史趋势，实际结果可能有偏差"
+                "note": "Predictions are based on historical trends; actual results may vary"
             }
 
         except MCPError as e:
@@ -2115,12 +2115,12 @@ class AnalyticsTools:
                 return {
                     "success": True,
                     "summary": {
-                        "description": "跨平台新闻聚合结果",
+                        "description": "Cross-platform news aggregation results",
                         "total": 0,
                         "returned": 0
                     },
                     "data": [],
-                    "message": "未找到新闻数据"
+                    "message": "No news data found"
                 }
 
             # 执行聚合
@@ -2147,7 +2147,7 @@ class AnalyticsTools:
             return {
                 "success": True,
                 "summary": {
-                    "description": "跨平台新闻聚合结果",
+                    "description": "Cross-platform news aggregation results",
                     "original_count": total_original,
                     "aggregated_count": total_aggregated,
                     "returned": len(results),
@@ -2348,8 +2348,8 @@ class AnalyticsTools:
 
             if compare_type not in ["overview", "topic_shift", "platform_activity"]:
                 raise InvalidParameterError(
-                    f"不支持的对比类型: {compare_type}",
-                    suggestion="支持的类型: overview, topic_shift, platform_activity"
+                    f"Unsupported comparison type: {compare_type}",
+                    suggestion="Supported types: overview, topic_shift, platform_activity"
                 )
 
             # 解析时间段
@@ -2358,8 +2358,8 @@ class AnalyticsTools:
 
             if not date_range1 or not date_range2:
                 raise InvalidParameterError(
-                    "无效的时间段格式",
-                    suggestion="使用 {'start': 'YYYY-MM-DD', 'end': 'YYYY-MM-DD'} 或预设值如 'last_week'"
+                    "Invalid date range format",
+                    suggestion="Use {'start': 'YYYY-MM-DD', 'end': 'YYYY-MM-DD'} or a preset such as 'last_week'"
                 )
 
             # 收集两个时期的数据
@@ -2377,7 +2377,7 @@ class AnalyticsTools:
             result = {
                 "success": True,
                 "summary": {
-                    "description": f"时期对比分析（{compare_type}）",
+                    "description": f"Period comparison analysis ({compare_type})",
                     "compare_type": compare_type,
                     "periods": {
                         "period1": {

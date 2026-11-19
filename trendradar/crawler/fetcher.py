@@ -77,10 +77,10 @@ class DataFetcher:
                     continue
                 parsed = urlparse(url)
                 if parsed.scheme != "https":
-                    return f"{url} (非 HTTPS 或格式异常)"
+                    return f"{url} (not HTTPS or invalid format)"
                 hostname = (parsed.hostname or "").lower()
                 if hostname != expected and not hostname.endswith("." + expected):
-                    return f"{hostname} (来自 {url})"
+                    return f"{hostname} (from {url})"
         return None
 
     def fetch_data(
@@ -128,12 +128,12 @@ class DataFetcher:
                 data_text = response.text
                 data_json = json.loads(data_text)
 
-                status = data_json.get("status", "未知")
+                status = data_json.get("status", "unknown")
                 if status not in ["success", "cache"]:
-                    raise ValueError(f"响应状态异常: {status}")
+                    raise ValueError(f"Unexpected response status: {status}")
 
-                status_info = "最新数据" if status == "success" else "缓存数据"
-                print(f"获取 {id_value} 成功（{status_info}）")
+                status_info = "latest data" if status == "success" else "cached data"
+                print(f"Fetched {id_value} successfully ({status_info})")
                 return data_text, id_value, alias
 
             except Exception as e:
@@ -142,10 +142,10 @@ class DataFetcher:
                     base_wait = random.uniform(min_retry_wait, max_retry_wait)
                     additional_wait = (retries - 1) * random.uniform(1, 2)
                     wait_time = base_wait + additional_wait
-                    print(f"请求 {id_value} 失败: {e}. {wait_time:.2f}秒后重试...")
+                    print(f"Request {id_value} failed: {e}. {wait_time:.2f} seconds before retry...")
                     time.sleep(wait_time)
                 else:
-                    print(f"请求 {id_value} 失败: {e}")
+                    print(f"Request {id_value} failed: {e}")
                     return None, id_value, alias
 
         return None, id_value, alias
@@ -192,11 +192,11 @@ class DataFetcher:
                     if expected_domain:
                         bad_reason = self._check_domain_safety(items, expected_domain)
                         if bad_reason:
-                            print(f"⚠️ 安全警告: {name}({id_value}) 返回数据未通过域名安全校验！")
-                            print(f"   预期域名: https://*.{expected_domain}")
-                            print(f"   异常来源: {bad_reason}")
-                            print(f"   当前 API 地址: {self.api_url}")
-                            print(f"   该平台数据已丢弃，请检查 API 来源是否可信")
+                            print(f"⚠️ Security warning: {name}({id_value}) returned data that failed domain validation!")
+                            print(f"   Expected domain: https://*.{expected_domain}")
+                            print(f"   Unexpected source: {bad_reason}")
+                            print(f"   Current API URL: {self.api_url}")
+                            print(f"   Data from this platform was discarded. Check whether the API source is trusted.")
                             failed_ids.append(id_value)
                             continue
 
@@ -220,10 +220,10 @@ class DataFetcher:
                                 "mobileUrl": mobile_url,
                             }
                 except json.JSONDecodeError:
-                    print(f"解析 {id_value} 响应失败")
+                    print(f"Parsing {id_value} response failed")
                     failed_ids.append(id_value)
                 except Exception as e:
-                    print(f"处理 {id_value} 数据出错: {e}")
+                    print(f"Processing {id_value} data failed: {e}")
                     failed_ids.append(id_value)
             else:
                 failed_ids.append(id_value)
@@ -234,5 +234,5 @@ class DataFetcher:
                 actual_interval = max(50, actual_interval)
                 time.sleep(actual_interval / 1000)
 
-        print(f"成功: {list(results.keys())}, 失败: {failed_ids}")
+        print(f"Succeeded: {list(results.keys())}, failed: {failed_ids}")
         return results, id_to_name, failed_ids

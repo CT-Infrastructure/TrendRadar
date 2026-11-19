@@ -73,8 +73,8 @@ class ArticleReaderTools:
         try:
             if not url or not url.startswith(("http://", "https://")):
                 raise InvalidParameterError(
-                    f"无效的 URL: {url}",
-                    suggestion="URL 必须以 http:// 或 https:// 开头"
+                    f"Invalid URL: {url}",
+                    suggestion="URL must start with http:// or https://"
                 )
 
             self._throttle()
@@ -100,8 +100,8 @@ class ArticleReaderTools:
                     "success": False,
                     "error": {
                         "code": "RATE_LIMITED",
-                        "message": "Jina Reader 速率限制，请稍后重试",
-                        "suggestion": "免费限制: 100 RPM / 2 并发，可配置 API Key 提升限额"
+                        "message": "Jina Reader rate limit reached; try again later",
+                        "suggestion": "Free tier: 100 requests/minute and 2 concurrent requests. Configure an API key for higher limits."
                     }
                 }
             else:
@@ -119,9 +119,9 @@ class ArticleReaderTools:
                 "success": False,
                 "error": {
                     "code": "TIMEOUT",
-                    "message": f"请求超时（{timeout}秒）",
+                    "message": f"Request timed out ({timeout} seconds)",
                     "url": url,
-                    "suggestion": "可尝试增加 timeout 参数"
+                    "suggestion": "Try increasing the timeout"
                 }
             }
         except MCPError as e:
@@ -154,8 +154,8 @@ class ArticleReaderTools:
         try:
             if not urls:
                 raise InvalidParameterError(
-                    "URL 列表不能为空",
-                    suggestion="请提供至少一个 URL"
+                    "The URL list cannot be empty",
+                    suggestion="Provide at least one URL"
                 )
 
             # 限制最多 5 篇
@@ -185,7 +185,7 @@ class ArticleReaderTools:
             return {
                 "success": True,
                 "summary": {
-                    "description": "批量文章读取结果",
+                    "description": "Batch article retrieval results",
                     "requested": len(urls),
                     "processed": len(actual_urls),
                     "succeeded": succeeded,
@@ -194,7 +194,7 @@ class ArticleReaderTools:
                     "interval_seconds": BATCH_INTERVAL,
                 },
                 "articles": results,
-                "note": f"已跳过 {skipped} 篇（单次上限 {MAX_BATCH_SIZE} 篇）" if skipped > 0 else None
+                "note": f"Skipped {skipped} articles (limit {MAX_BATCH_SIZE} per request)" if skipped > 0 else None
             }
 
         except MCPError as e:
