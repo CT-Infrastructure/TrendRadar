@@ -102,14 +102,14 @@ class AIAnalyzer:
         # 验证配置
         valid, error = self.client.validate_config()
         if not valid:
-            print(f"[AI] 配置警告: {error}")
+            print(f"[AI] Configuration warning: {error}")
 
         # 从分析配置获取功能参数
         self.max_news = analysis_config.get("MAX_NEWS_FOR_ANALYSIS", 50)
         self.include_rss = analysis_config.get("INCLUDE_RSS", True)
         self.include_rank_timeline = analysis_config.get("INCLUDE_RANK_TIMELINE", False)
         self.include_standalone = analysis_config.get("INCLUDE_STANDALONE", False)
-        self.language = analysis_config.get("LANGUAGE", "Chinese")
+        self.language = analysis_config.get("LANGUAGE", "English")
 
         # 加载提示词模板
         self.system_prompt, self.user_prompt_template = load_prompt_template(
@@ -122,7 +122,7 @@ class AIAnalyzer:
         stats: List[Dict],
         rss_stats: Optional[List[Dict]] = None,
         report_mode: str = "daily",
-        report_type: str = "当日汇总",
+        report_type: str = "Daily Summary",
         platforms: Optional[List[str]] = None,
         keywords: Optional[List[str]] = None,
         standalone_data: Optional[Dict] = None,
@@ -149,20 +149,20 @@ class AIAnalyzer:
         masked_key = f"{api_key[:5]}******" if len(api_key) >= 5 else "******"
         model_display = model.replace("/", "/\u200b") if model else "unknown"
 
-        print(f"[AI] 模型: {model_display}")
+        print(f"[AI] Model: {model_display}")
         print(f"[AI] Key : {masked_key}")
 
         if api_base:
-            print(f"[AI] 接口: 存在自定义 API 端点")
+            print(f"[AI] Endpoint: using a custom API endpoint")
 
         timeout = self.ai_config.get("TIMEOUT", 120)
         max_tokens = self.ai_config.get("MAX_TOKENS", 5000)
-        print(f"[AI] 参数: timeout={timeout}, max_tokens={max_tokens}")
+        print(f"[AI] Parameters: timeout={timeout}, max_tokens={max_tokens}")
 
         if not self.client.api_key:
             return AIAnalysisResult(
                 success=False,
-                error="未配置 AI API Key，请在 config.yaml 或环境变量 AI_API_KEY 中设置"
+                error="AI API key is not configured. Set it in config.yaml or the AI_API_KEY environment variable."
             )
 
         # 准备新闻内容并获取统计数据
@@ -173,7 +173,7 @@ class AIAnalyzer:
             return AIAnalysisResult(
                 success=False,
                 skipped=True,
-                error="本轮无新增热点内容，跳过 AI 分析",
+                error="No new trending content in this run; skipping AI analysis",
                 total_news=total_news,
                 hotlist_count=prepared.hotlist_total,
                 rss_count=prepared.rss_total,
@@ -195,8 +195,8 @@ class AIAnalyzer:
         user_prompt = user_prompt.replace("{current_time}", current_time)
         user_prompt = user_prompt.replace("{news_count}", str(prepared.hotlist_total))
         user_prompt = user_prompt.replace("{rss_count}", str(prepared.rss_total))
-        user_prompt = user_prompt.replace("{platforms}", ", ".join(platforms) if platforms else "多平台")
-        user_prompt = user_prompt.replace("{keywords}", ", ".join(keywords[:20]) if keywords else "无")
+        user_prompt = user_prompt.replace("{platforms}", ", ".join(platforms) if platforms else "Multiple sources")
+        user_prompt = user_prompt.replace("{keywords}", ", ".join(keywords[:20]) if keywords else "None")
         user_prompt = user_prompt.replace("{news_content}", prepared.news_content)
         user_prompt = user_prompt.replace("{rss_content}", prepared.rss_content)
         user_prompt = user_prompt.replace("{language}", self.language)
@@ -210,7 +210,7 @@ class AIAnalyzer:
 
         if self.debug:
             print("\n" + "=" * 80)
-            print("[AI 调试] 发送给 AI 的完整提示词")
+            print("[AI DEBUG] Complete prompt sent to AI")
             print("=" * 80)
             if self.system_prompt:
                 print("\n--- System Prompt ---")
@@ -225,15 +225,15 @@ class AIAnalyzer:
             result = self._parse_response(response)
 
             # JSON 解析失败时的重试兜底（仅重试一次）
-            if result.error and "JSON 解析错误" in result.error:
-                print(f"[AI] JSON 解析失败，尝试让 AI 修复...")
+            if result.error and "JSON parse error" in result.error:
+                print(f"[AI] JSON parsing failed; asking AI to repair the response...")
                 retry_result = self._retry_fix_json(response, result.error)
                 if retry_result and retry_result.success and not retry_result.error:
-                    print("[AI] JSON 修复成功")
+                    print("[AI] JSON repair succeeded")
                     retry_result.raw_response = response
                     result = retry_result
                 else:
-                    print("[AI] JSON 修复失败，使用原始文本兜底")
+                    print("[AI] JSON repair failed; falling back to the original text")
 
             # 如果配置未启用 RSS 分析，强制清空 AI 返回的 RSS 洞察
             if not self.include_rss:
@@ -262,7 +262,7 @@ class AIAnalyzer:
             # 截断过长的错误消息
             if len(error_msg) > 200:
                 error_msg = error_msg[:200] + "..."
-            friendly_msg = f"AI 分析失败 ({error_type}): {error_msg}"
+            friendly_msg = f"AI analysis failed ({error_type}): {error_msg}"
 
             return AIAnalysisResult(
                 success=False,
@@ -289,7 +289,7 @@ class AIAnalyzer:
                 word = stat.get("word", "")
                 titles = stat.get("titles", [])
                 if word and titles:
-                    news_lines.append(f"\n**{word}** ({len(titles)}条)")
+                    news_lines.append(f"\n**{word}** ({len(titles)} items)")
                     for t in titles:
                         if not isinstance(t, dict):
                             continue
@@ -321,13 +321,13 @@ class AIAnalyzer:
 
                         appear_count = t.get("count", 1)
 
-                        line += f" | 排名:{rank_str} | 时间:{time_str} | 出现:{appear_count}次"
+                        line += f" | Rank: {rank_str} | Time: {time_str} | Appearances: {appear_count} times"
 
                         # 开启完整时间线时，额外添加轨迹
                         if self.include_rank_timeline:
                             rank_timeline = t.get("rank_timeline", [])
                             timeline_str = self._format_rank_timeline(rank_timeline)
-                            line += f" | 轨迹:{timeline_str}"
+                            line += f" | Rank history: {timeline_str}"
 
                         news_lines.append(line)
 
@@ -346,7 +346,7 @@ class AIAnalyzer:
                 word = stat.get("word", "")
                 titles = stat.get("titles", [])
                 if word and titles:
-                    rss_lines.append(f"\n**{word}** ({len(titles)}条)")
+                    rss_lines.append(f"\n**{word}** ({len(titles)} items)")
                     for t in titles:
                         if not isinstance(t, dict):
                             continue
@@ -413,21 +413,22 @@ class AIAnalyzer:
             {
                 "role": "system",
                 "content": (
-                    "你是一个 JSON 修复助手。用户会提供一段格式有误的 JSON 和错误信息，"
-                    "你需要修复 JSON 格式错误并返回正确的 JSON。\n"
-                    "常见问题：字符串值内的双引号未转义、缺少逗号、字符串未正确闭合等。\n"
-                    "只返回纯 JSON，不要包含 markdown 代码块标记（如 ```json）或任何说明文字。"
+                    "You repair malformed JSON. The user will provide the JSON and its parsing error. "
+                    "Correct the syntax and return valid JSON.\n"
+                    "Common problems include unescaped quotes in string values, missing commas, "
+                    "and unterminated strings.\n"
+                    "Return only JSON, without Markdown code fences or explanatory text."
                 ),
             },
             {
                 "role": "user",
                 "content": (
-                    f"以下 JSON 解析失败：\n\n"
-                    f"错误：{error_msg}\n\n"
-                    f"原始内容：\n{original_response}\n\n"
-                    f"请修复以上 JSON 中的格式问题（如值中的双引号改用中文引号「」或转义 \\\"、"
-                    f"缺少逗号、不完整的字符串等），保持原始内容语义不变，只修复格式。"
-                    f"直接返回修复后的纯 JSON。"
+                    f"The following JSON could not be parsed.\n\n"
+                    f"Error: {error_msg}\n\n"
+                    f"Original content:\n{original_response}\n\n"
+                    "Repair syntax errors such as unescaped quotes in values, missing commas, "
+                    "or unterminated strings. Preserve the original meaning and language; "
+                    "change only the JSON formatting. Return only the repaired JSON."
                 ),
             },
         ]
@@ -436,7 +437,7 @@ class AIAnalyzer:
             response = self.client.chat(messages)
             return self._parse_response(response)
         except Exception as e:
-            print(f"[AI] 重试修复 JSON 异常: {type(e).__name__}: {e}")
+            print(f"[AI] JSON repair retry failed: {type(e).__name__}: {e}")
             return None
 
     def _format_time_range(self, first_time: str, last_time: str) -> str:
@@ -518,26 +519,26 @@ class AIAnalyzer:
                     min_rank = min(ranks)
                     max_rank = max(ranks)
                     rank_str = f"{min_rank}" if min_rank == max_rank else f"{min_rank}-{max_rank}"
-                    line += f" | 排名:{rank_str}"
+                    line += f" | Rank: {rank_str}"
 
                 # 时间范围
                 first_time = item.get("first_time", "")
                 last_time = item.get("last_time", "")
                 if first_time:
                     time_str = self._format_time_range(first_time, last_time)
-                    line += f" | 时间:{time_str}"
+                    line += f" | Time: {time_str}"
 
                 # 出现次数
                 count = item.get("count", 1)
                 if count > 1:
-                    line += f" | 出现:{count}次"
+                    line += f" | Appearances: {count} times"
 
                 # 排名轨迹（如果启用）
                 if self.include_rank_timeline:
                     rank_timeline = item.get("rank_timeline", [])
                     if rank_timeline:
                         timeline_str = self._format_rank_timeline(rank_timeline)
-                        line += f" | 轨迹:{timeline_str}"
+                        line += f" | Rank history: {timeline_str}"
 
                 lines.append(line)
             lines.append("")
@@ -576,7 +577,7 @@ class AIAnalyzer:
         result = AIAnalysisResult(raw_response=response)
 
         if not response or not response.strip():
-            result.error = "AI 返回空响应"
+            result.error = "AI returned an empty response"
             return result
 
         # 提取 JSON 文本（去掉 markdown 代码块标记）
@@ -598,7 +599,7 @@ class AIAnalyzer:
 
         json_str = json_str.strip()
         if not json_str:
-            result.error = "提取的 JSON 内容为空"
+            result.error = "Extracted JSON is empty"
             result.core_trends = response[:500] + "..." if len(response) > 500 else response
             result.success = True
             return result
@@ -619,7 +620,7 @@ class AIAnalyzer:
                 repaired = repair_json(json_str, return_objects=True)
                 if isinstance(repaired, dict):
                     data = repaired
-                    print("[AI] JSON 本地修复成功（json_repair）")
+                    print("[AI] JSON repaired locally (json_repair)")
             except Exception:
                 pass
 
@@ -627,11 +628,11 @@ class AIAnalyzer:
         if data is None:
             if parse_error:
                 error_context = json_str[max(0, parse_error.pos - 30):parse_error.pos + 30] if json_str and parse_error.pos else ""
-                result.error = f"JSON 解析错误 (位置 {parse_error.pos}): {parse_error.msg}"
+                result.error = f"JSON parse error (position {parse_error.pos}): {parse_error.msg}"
                 if error_context:
-                    result.error += f"，上下文: ...{error_context}..."
+                    result.error += f"; context: ...{error_context}..."
             else:
-                result.error = "JSON 解析失败"
+                result.error = "JSON parsing failed"
             # 兜底：使用已提取的 json_str（不含 markdown 标记），避免推送中出现 ```json
             result.core_trends = json_str[:500] + "..." if len(json_str) > 500 else json_str
             result.success = True
@@ -654,7 +655,7 @@ class AIAnalyzer:
 
             result.success = True
         except (KeyError, TypeError, AttributeError) as e:
-            result.error = f"字段提取错误: {type(e).__name__}: {e}"
+            result.error = f"Field extraction error: {type(e).__name__}: {e}"
             result.core_trends = json_str[:500] + "..." if len(json_str) > 500 else json_str
             result.success = True
 

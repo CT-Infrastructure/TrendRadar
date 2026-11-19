@@ -115,7 +115,7 @@ class ParserService:
                 return self._read_rss_from_sqlite(cursor, platform_ids, all_titles, id_to_name, all_timestamps)
 
         except Exception as e:
-            print(f"Warning: 从 SQLite 读取数据失败: {e}")
+            print(f"Warning: Could not read data from SQLite: {e}")
             return None
         finally:
             if 'conn' in locals():
@@ -341,8 +341,8 @@ class ParserService:
             return result
 
         raise DataNotFoundError(
-            f"未找到 {date_str} 的 {db_type} 数据",
-            suggestion="请先运行爬虫或检查日期是否正确"
+            f"No {db_type} data found for {date_str}",
+            suggestion="Run the crawler first or check the date"
         )
 
     def parse_yaml_config(self, config_path: str = None) -> dict:
@@ -364,7 +364,7 @@ class ParserService:
             config_path = Path(config_path)
 
         if not config_path.exists():
-            raise FileParseError(str(config_path), "配置文件不存在")
+            raise FileParseError(str(config_path), "Configuration file does not exist")
 
         try:
             with open(config_path, "r", encoding="utf-8") as f:

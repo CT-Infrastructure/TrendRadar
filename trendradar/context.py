@@ -414,7 +414,7 @@ class AppContext:
         ai_content: Optional[str] = None,
         standalone_data: Optional[Dict] = None,
         ai_stats: Optional[Dict] = None,
-        report_type: str = "热点分析报告",
+        report_type: str = "Trend Analysis Report",
     ) -> List[str]:
         """分批处理消息内容（支持热榜+RSS合并+AI分析+独立展示区）
 
@@ -513,7 +513,7 @@ class AppContext:
         try:
             return self._get_ai_filter_pipeline().run(interests_file)
         except _TagExtractionError:
-            return AIFilterResult(success=False, error="标签提取失败")
+            return AIFilterResult(success=False, error="Tag extraction failed")
 
     def convert_ai_filter_to_report_data(
         self,

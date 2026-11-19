@@ -137,7 +137,7 @@ def _load_timeline_data(config_dir: str = "config") -> Dict:
     """
     timeline_path = Path(config_dir) / "timeline.yaml"
     if not timeline_path.exists():
-        print(f"[调度] timeline.yaml 未找到: {timeline_path}，使用空模板")
+        print(f"[Schedule] timeline.yaml not found: {timeline_path}; using an empty template")
         return {
             "presets": {},
             "custom": {
@@ -158,7 +158,7 @@ def _load_timeline_data(config_dir: str = "config") -> Dict:
     with open(timeline_path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
-    print(f"[调度] timeline.yaml 加载成功: {timeline_path}")
+    print(f"[Schedule] timeline.yaml loaded: {timeline_path}")
     return data or {}
 
 
@@ -191,10 +191,10 @@ def _load_rss_config(config_data: Dict) -> Dict:
     try:
         max_age_days = int(raw_max_age)
         if max_age_days < 0:
-            print(f"[警告] RSS freshness_filter.max_age_days 为负数 ({max_age_days})，使用默认值 3")
+            print(f"[Warning] RSS freshness_filter.max_age_days is negative ({max_age_days}); using the default of 3")
             max_age_days = 3
     except (ValueError, TypeError):
-        print(f"[警告] RSS freshness_filter.max_age_days 格式错误 ({raw_max_age})，使用默认值 3")
+        print(f"[Warning] RSS freshness_filter.max_age_days is invalid ({raw_max_age}); using the default of 3")
         max_age_days = 3
 
     # RSS 配置直接从 config.yaml 读取，不再支持环境变量
@@ -282,7 +282,7 @@ def _load_ai_analysis_config(config_data: Dict) -> Dict:
 
     return {
         "ENABLED": enabled_env if enabled_env is not None else ai_config.get("enabled", False),
-        "LANGUAGE": ai_config.get("language", "Chinese"),
+        "LANGUAGE": ai_config.get("language", "English"),
         "PROMPT_FILE": ai_config.get("prompt_file", "ai_analysis_prompt.txt"),
         "MODE": ai_config.get("mode", "follow_report"),
         "MAX_NEWS_FOR_ANALYSIS": ai_config.get("max_news_for_analysis", 50),
@@ -447,20 +447,20 @@ def _print_notification_sources(config: Dict) -> None:
     if config["FEISHU_WEBHOOK_URL"]:
         accounts = parse_multi_account_config(config["FEISHU_WEBHOOK_URL"])
         count = min(len(accounts), max_accounts)
-        source = "环境变量" if os.environ.get("FEISHU_WEBHOOK_URL") else "配置文件"
-        notification_sources.append(f"飞书({source}, {count}个账号)")
+        source = "environment variables" if os.environ.get("FEISHU_WEBHOOK_URL") else "configuration file"
+        notification_sources.append(f"Feishu ({source}, {count} accounts)")
 
     if config["DINGTALK_WEBHOOK_URL"]:
         accounts = parse_multi_account_config(config["DINGTALK_WEBHOOK_URL"])
         count = min(len(accounts), max_accounts)
-        source = "环境变量" if os.environ.get("DINGTALK_WEBHOOK_URL") else "配置文件"
-        notification_sources.append(f"钉钉({source}, {count}个账号)")
+        source = "environment variables" if os.environ.get("DINGTALK_WEBHOOK_URL") else "configuration file"
+        notification_sources.append(f"DingTalk ({source}, {count} accounts)")
 
     if config["WEWORK_WEBHOOK_URL"]:
         accounts = parse_multi_account_config(config["WEWORK_WEBHOOK_URL"])
         count = min(len(accounts), max_accounts)
-        source = "环境变量" if os.environ.get("WEWORK_WEBHOOK_URL") else "配置文件"
-        notification_sources.append(f"企业微信({source}, {count}个账号)")
+        source = "environment variables" if os.environ.get("WEWORK_WEBHOOK_URL") else "configuration file"
+        notification_sources.append(f"WeCom ({source}, {count} accounts)")
 
     if config["TELEGRAM_BOT_TOKEN"] and config["TELEGRAM_CHAT_ID"]:
         tokens = parse_multi_account_config(config["TELEGRAM_BOT_TOKEN"])
@@ -472,12 +472,12 @@ def _print_notification_sources(config: Dict) -> None:
         )
         if valid and count > 0:
             count = min(count, max_accounts)
-            token_source = "环境变量" if os.environ.get("TELEGRAM_BOT_TOKEN") else "配置文件"
-            notification_sources.append(f"Telegram({token_source}, {count}个账号)")
+            token_source = "environment variables" if os.environ.get("TELEGRAM_BOT_TOKEN") else "configuration file"
+            notification_sources.append(f"Telegram({token_source}, {count} accounts)")
 
     if config["EMAIL_FROM"] and config["EMAIL_PASSWORD"] and config["EMAIL_TO"]:
-        from_source = "环境变量" if os.environ.get("EMAIL_FROM") else "配置文件"
-        notification_sources.append(f"邮件({from_source})")
+        from_source = "environment variables" if os.environ.get("EMAIL_FROM") else "configuration file"
+        notification_sources.append(f"Email ({from_source})")
 
     if config["NTFY_SERVER_URL"] and config["NTFY_TOPIC"]:
         topics = parse_multi_account_config(config["NTFY_TOPIC"])
@@ -489,36 +489,36 @@ def _print_notification_sources(config: Dict) -> None:
             )
             if valid and count > 0:
                 count = min(count, max_accounts)
-                server_source = "环境变量" if os.environ.get("NTFY_SERVER_URL") else "配置文件"
-                notification_sources.append(f"ntfy({server_source}, {count}个账号)")
+                server_source = "environment variables" if os.environ.get("NTFY_SERVER_URL") else "configuration file"
+                notification_sources.append(f"ntfy({server_source}, {count} accounts)")
         else:
             count = min(len(topics), max_accounts)
-            server_source = "环境变量" if os.environ.get("NTFY_SERVER_URL") else "配置文件"
-            notification_sources.append(f"ntfy({server_source}, {count}个账号)")
+            server_source = "environment variables" if os.environ.get("NTFY_SERVER_URL") else "configuration file"
+            notification_sources.append(f"ntfy({server_source}, {count} accounts)")
 
     if config["BARK_URL"]:
         accounts = parse_multi_account_config(config["BARK_URL"])
         count = min(len(accounts), max_accounts)
-        bark_source = "环境变量" if os.environ.get("BARK_URL") else "配置文件"
-        notification_sources.append(f"Bark({bark_source}, {count}个账号)")
+        bark_source = "environment variables" if os.environ.get("BARK_URL") else "configuration file"
+        notification_sources.append(f"Bark({bark_source}, {count} accounts)")
 
     if config["SLACK_WEBHOOK_URL"]:
         accounts = parse_multi_account_config(config["SLACK_WEBHOOK_URL"])
         count = min(len(accounts), max_accounts)
-        slack_source = "环境变量" if os.environ.get("SLACK_WEBHOOK_URL") else "配置文件"
-        notification_sources.append(f"Slack({slack_source}, {count}个账号)")
+        slack_source = "environment variables" if os.environ.get("SLACK_WEBHOOK_URL") else "configuration file"
+        notification_sources.append(f"Slack({slack_source}, {count} accounts)")
 
     if config.get("GENERIC_WEBHOOK_URL"):
         accounts = parse_multi_account_config(config["GENERIC_WEBHOOK_URL"])
         count = min(len(accounts), max_accounts)
-        source = "环境变量" if os.environ.get("GENERIC_WEBHOOK_URL") else "配置文件"
-        notification_sources.append(f"通用Webhook({source}, {count}个账号)")
+        source = "environment variables" if os.environ.get("GENERIC_WEBHOOK_URL") else "configuration file"
+        notification_sources.append(f"Generic webhook ({source}, {count} accounts)")
 
     if notification_sources:
-        print(f"通知渠道配置来源: {', '.join(notification_sources)}")
-        print(f"每个渠道最大账号数: {max_accounts}")
+        print(f"Notification configuration sources: {', '.join(notification_sources)}")
+        print(f"Maximum accounts per channel: {max_accounts}")
     else:
-        print("未配置任何通知渠道")
+        print("No notification channels configured")
 
 
 def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
@@ -538,12 +538,12 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
         config_path = os.environ.get("CONFIG_PATH", "config/config.yaml")
 
     if not Path(config_path).exists():
-        raise FileNotFoundError(f"配置文件 {config_path} 不存在")
+        raise FileNotFoundError(f"configuration file {config_path} does not exist")
 
     with open(config_path, "r", encoding="utf-8") as f:
         config_data = yaml.safe_load(f)
 
-    print(f"配置文件加载成功: {config_path}")
+    print(f"Configuration loaded: {config_path}")
 
     # 合并所有配置
     config = {}

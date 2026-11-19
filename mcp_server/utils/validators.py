@@ -70,7 +70,7 @@ def _parse_string_to_list(value: str) -> List[str]:
     return [value]
 
 
-def _parse_string_to_int(value: str, param_name: str = "参数") -> int:
+def _parse_string_to_int(value: str, param_name: str = "parameter") -> int:
     """
     将字符串解析为整数
 
@@ -97,12 +97,12 @@ def _parse_string_to_int(value: str, param_name: str = "参数") -> int:
         return int(float(value))
     except ValueError:
         raise InvalidParameterError(
-            f"{param_name} 必须是整数，无法解析: {value}",
-            suggestion=f"请提供有效的整数值，如: 10, 50, 100"
+            f"{param_name} must be an integer; could not parse: {value}",
+            suggestion=f"Provide a valid integer, such as 10, 50, or 100"
         )
 
 
-def _parse_string_to_float(value: str, param_name: str = "参数") -> float:
+def _parse_string_to_float(value: str, param_name: str = "parameter") -> float:
     """
     将字符串解析为浮点数
 
@@ -122,8 +122,8 @@ def _parse_string_to_float(value: str, param_name: str = "参数") -> float:
         return float(value)
     except ValueError:
         raise InvalidParameterError(
-            f"{param_name} 必须是数字，无法解析: {value}",
-            suggestion=f"请提供有效的数字值，如: 0.6, 3.0"
+            f"{param_name} must be numeric; could not parse: {value}",
+            suggestion=f"Provide a valid number, such as 0.6 or 3.0"
         )
 
 
@@ -189,7 +189,7 @@ def get_supported_platforms() -> List[str]:
             _platforms_config_mtime = current_mtime
             return _platforms_cache
     except Exception as e:
-        print(f"警告：无法加载平台配置: {e}")
+        print(f"Warning: Could not load platform configuration: {e}")
         return []
 
 
@@ -232,23 +232,23 @@ def validate_platforms(platforms: Optional[Union[List[str], str]]) -> List[str]:
             return supported_platforms if supported_platforms else []
 
     if not isinstance(platforms, list):
-        raise InvalidParameterError("platforms 参数必须是列表类型")
+        raise InvalidParameterError("platforms must be a list")
 
     if not platforms:
         # 空列表时，返回配置文件中的平台列表
         return supported_platforms if supported_platforms else []
 
-    # 如果配置加载失败（supported_platforms为空），允许所有平台通过
+    # 如果配置加载失败（supported_platforms为空），允许All platforms通过
     if not supported_platforms:
-        print("警告：平台配置未加载，跳过平台验证")
+        print("Warning: Platform configuration is unavailable; skipping platform validation")
         return platforms
 
     # 验证每个平台是否在配置中
     invalid_platforms = [p for p in platforms if p not in supported_platforms]
     if invalid_platforms:
         raise InvalidParameterError(
-            f"不支持的平台: {', '.join(invalid_platforms)}",
-            suggestion=f"支持的平台（来自config.yaml）: {', '.join(supported_platforms)}"
+            f"Unsupported platform: {', '.join(invalid_platforms)}",
+            suggestion=f"Supported platforms (from config.yaml): {', '.join(supported_platforms)}"
         )
 
     return platforms
@@ -277,15 +277,15 @@ def validate_limit(limit: Optional[Union[int, str]], default: int = 20, max_limi
         limit = _parse_string_to_int(limit, "limit")
 
     if not isinstance(limit, int):
-        raise InvalidParameterError("limit 参数必须是整数类型")
+        raise InvalidParameterError("limit must be an integer")
 
     if limit <= 0:
-        raise InvalidParameterError("limit 必须大于0")
+        raise InvalidParameterError("limit must be greater than 0")
 
     if limit > max_limit:
         raise InvalidParameterError(
-            f"limit 不能超过 {max_limit}",
-            suggestion=f"请使用分页或降低limit值"
+            f"limit cannot exceed {max_limit}",
+            suggestion=f"Use pagination or a lower limit"
         )
 
     return limit
@@ -308,8 +308,8 @@ def validate_date(date_str: str) -> datetime:
         return datetime.strptime(date_str, "%Y-%m-%d")
     except ValueError:
         raise InvalidParameterError(
-            f"日期格式错误: {date_str}",
-            suggestion="请使用 YYYY-MM-DD 格式，例如: 2025-10-11"
+            f"Invalid date format: {date_str}",
+            suggestion="Use YYYY-MM-DD format, for example: 2025-10-11"
         )
 
 
@@ -390,8 +390,8 @@ def validate_date_range(date_range: Optional[Union[dict, str]]) -> Optional[tupl
                 date_range = json.loads(stripped)
             except json.JSONDecodeError as e:
                 raise InvalidParameterError(
-                    f"date_range JSON 解析失败: {e}",
-                    suggestion='请使用正确的JSON格式: {"start": "YYYY-MM-DD", "end": "YYYY-MM-DD"}'
+                    f"Could not parse date_range JSON: {e}",
+                    suggestion='Use valid JSON: {"start": "YYYY-MM-DD", "end": "YYYY-MM-DD"}'
                 )
         # 2. 检查是否是单日字符串格式 YYYY-MM-DD
         elif len(stripped) == 10 and stripped[4] == '-' and stripped[7] == '-':
@@ -400,8 +400,8 @@ def validate_date_range(date_range: Optional[Union[dict, str]]) -> Optional[tupl
                 return (single_date, single_date)
             except ValueError:
                 raise InvalidParameterError(
-                    f"日期格式错误: {stripped}",
-                    suggestion="请使用 YYYY-MM-DD 格式，例如: 2025-10-11"
+                    f"Invalid date format: {stripped}",
+                    suggestion="Use YYYY-MM-DD format, for example: 2025-10-11"
                 )
         # 3. 尝试自然语言解析
         else:
@@ -414,21 +414,21 @@ def validate_date_range(date_range: Optional[Union[dict, str]]) -> Optional[tupl
                     return (start_date, end_date)
                 else:
                     raise InvalidParameterError(
-                        f"无法识别的日期表达式: {stripped}",
-                        suggestion="支持格式: YYYY-MM-DD, {\"start\": \"...\", \"end\": \"...\"}, 或自然语言（今天、本周、最近7天等）"
+                        f"Unrecognized date expression: {stripped}",
+                        suggestion='Supported formats: YYYY-MM-DD, {"start": "...", "end": "..."}, or natural language (today, this week, last 7 days)'
                     )
             except InvalidParameterError:
                 raise
             except Exception:
                 raise InvalidParameterError(
-                    f"日期解析失败: {stripped}",
-                    suggestion="支持格式: YYYY-MM-DD, {\"start\": \"...\", \"end\": \"...\"}, 或自然语言（今天、本周、最近7天等）"
+                    f"Date parsing failed: {stripped}",
+                    suggestion='Supported formats: YYYY-MM-DD, {"start": "...", "end": "..."}, or natural language (today, this week, last 7 days)'
                 )
 
     if not isinstance(date_range, dict):
         raise InvalidParameterError(
-            "date_range 必须是字典类型、日期字符串或有效的JSON字符串",
-            suggestion='例如: {"start": "2025-10-01", "end": "2025-10-11"} 或 "2025-10-01"'
+            "date_range must be a dictionary, a date string, or a valid JSON string",
+            suggestion='For example: {"start": "2025-10-01", "end": "2025-10-11"} or "2025-10-01"'
         )
 
     start_str = date_range.get("start")
@@ -436,8 +436,8 @@ def validate_date_range(date_range: Optional[Union[dict, str]]) -> Optional[tupl
 
     if not start_str or not end_str:
         raise InvalidParameterError(
-            "date_range 必须包含 start 和 end 字段",
-            suggestion='例如: {"start": "2025-10-01", "end": "2025-10-11"}'
+            "date_range must contain start and end fields",
+            suggestion='For example: {"start": "2025-10-01", "end": "2025-10-11"}'
         )
 
     start_date = validate_date(start_str)
@@ -445,7 +445,7 @@ def validate_date_range(date_range: Optional[Union[dict, str]]) -> Optional[tupl
 
     if start_date > end_date:
         raise InvalidParameterError(
-            "开始日期不能晚于结束日期",
+            "The start date cannot be after the end date",
             suggestion=f"start: {start_str}, end: {end_str}"
         )
 
@@ -459,11 +459,11 @@ def validate_date_range(date_range: Optional[Union[dict, str]]) -> Optional[tupl
             earliest, latest = data_service.get_available_date_range()
 
             if earliest and latest:
-                available_range = f"{earliest.strftime('%Y-%m-%d')} 至 {latest.strftime('%Y-%m-%d')}"
+                available_range = f"{earliest.strftime('%Y-%m-%d')} to {latest.strftime('%Y-%m-%d')}"
             else:
-                available_range = "无可用数据"
+                available_range = "No data available"
         except Exception:
-            available_range = "未知（请检查 output 目录）"
+            available_range = "Unknown (check the output directory)"
 
         future_dates = []
         if start_date.date() > today:
@@ -472,8 +472,8 @@ def validate_date_range(date_range: Optional[Union[dict, str]]) -> Optional[tupl
             future_dates.append(end_str)
 
         raise InvalidParameterError(
-            f"不允许查询未来日期: {', '.join(future_dates)}（当前日期: {today.strftime('%Y-%m-%d')}）",
-            suggestion=f"当前可用数据范围: {available_range}"
+            f"Future dates cannot be queried: {', '.join(future_dates)} (current date: {today.strftime('%Y-%m-%d')})",
+            suggestion=f"Available date range: {available_range}"
         )
 
     return (start_date, end_date)
@@ -493,20 +493,20 @@ def validate_keyword(keyword: str) -> str:
         InvalidParameterError: 关键词无效
     """
     if not keyword:
-        raise InvalidParameterError("keyword 不能为空")
+        raise InvalidParameterError("keyword cannot be empty")
 
     if not isinstance(keyword, str):
-        raise InvalidParameterError("keyword 必须是字符串类型")
+        raise InvalidParameterError("keyword must be a string")
 
     keyword = keyword.strip()
 
     if not keyword:
-        raise InvalidParameterError("keyword 不能为空白字符")
+        raise InvalidParameterError("keyword cannot contain only whitespace")
 
     if len(keyword) > 100:
         raise InvalidParameterError(
-            "keyword 长度不能超过100个字符",
-            suggestion="请使用更简洁的关键词"
+            "keyword cannot exceed 100 characters",
+            suggestion="Use a shorter keyword"
         )
 
     return keyword
@@ -548,12 +548,12 @@ def validate_mode(mode: Optional[str], valid_modes: List[str], default: str) -> 
         return default
 
     if not isinstance(mode, str):
-        raise InvalidParameterError("mode 必须是字符串类型")
+        raise InvalidParameterError("mode must be a string")
 
     if mode not in valid_modes:
         raise InvalidParameterError(
-            f"无效的模式: {mode}",
-            suggestion=f"支持的模式: {', '.join(valid_modes)}"
+            f"Invalid mode: {mode}",
+            suggestion=f"Supported modes: {', '.join(valid_modes)}"
         )
 
     return mode
@@ -612,14 +612,14 @@ def validate_threshold(
 
     if not isinstance(threshold, float):
         raise InvalidParameterError(
-            f"{param_name} 必须是数字类型",
-            suggestion=f"请提供 {min_value} 到 {max_value} 之间的数字"
+            f"{param_name} must be numeric",
+            suggestion=f"Provide a number between {min_value} and {max_value}"
         )
 
     if threshold < min_value or threshold > max_value:
         raise InvalidParameterError(
-            f"{param_name} 必须在 {min_value} 到 {max_value} 之间，当前值: {threshold}",
-            suggestion=f"推荐值: {default}"
+            f"{param_name} must be between {min_value} and {max_value}; current value: {threshold}",
+            suggestion=f"Recommended value: {default}"
         )
 
     return threshold
@@ -652,8 +652,8 @@ def validate_date_query(
     """
     if not date_query:
         raise InvalidParameterError(
-            "日期查询字符串不能为空",
-            suggestion="请提供日期查询，如：今天、昨天、2025-10-10"
+            "The date query cannot be empty",
+            suggestion="Provide a date query, such as today, yesterday, or 2025-10-10"
         )
 
     # 使用DateParser解析日期

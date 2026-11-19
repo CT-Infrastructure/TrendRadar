@@ -1,6 +1,6 @@
 <div align="center">
 
-**[中文](README-MCP-FAQ.md)** | **English**
+**English** | **[中文](README-MCP-FAQ-ZH.md)**
 
 </div>
 

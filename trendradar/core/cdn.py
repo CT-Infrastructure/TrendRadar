@@ -67,7 +67,7 @@ def fetch_with_fallback(
         try:
             return _do_request(url, proxies)
         except Exception as e:
-            logger.warning("[版本检查] 获取失败: %s", e)
+            logger.warning("[Version check] Fetch failed: %s", e)
             return None
 
     n = len(_ALL_SOURCES)
@@ -80,12 +80,12 @@ def fetch_with_fallback(
             content = _do_request(source + path, proxies)
             if idx != start:
                 label = _SOURCE_LABELS.get(source, source)
-                logger.info("[版本检查] 已切换到: %s", label)
+                logger.info("[Version check] Switched to: %s", label)
             _state["last_ok"] = idx
             return content
         except Exception:
             label = _SOURCE_LABELS.get(source, source)
-            logger.debug("[版本检查] %s 不可用，尝试下一个源", label)
+            logger.debug("[Version check] %s unavailable; trying the next source", label)
 
-    logger.warning("[版本检查] 所有源均不可用")
+    logger.warning("[Version check] All sources are unavailable")
     return None

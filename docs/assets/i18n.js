@@ -5,7 +5,7 @@
     'use strict';
 
     const STORAGE_KEY_LANG = 'trendradar_lang';
-    let currentLang = 'zh';
+    let currentLang = 'en';
 
     const T = { zh: {}, en: {} };
 
@@ -577,8 +577,8 @@
     // ═══════════════════════════════════════
 
     window.t = function (key, replacements) {
-        var dict = T[currentLang] || T.zh;
-        var text = dict[key] || T.zh[key] || key;
+        var dict = T[currentLang] || T.en;
+        var text = dict[key] || T.en[key] || key;
         if (replacements) {
             if (typeof replacements === 'string') {
                 text = text.replace('{0}', replacements);
@@ -598,7 +598,7 @@
     window.switchLang = function (lang) {
         if (lang !== 'zh' && lang !== 'en') return;
         currentLang = lang;
-        localStorage.setItem(STORAGE_KEY_LANG, lang);
+        try { localStorage.setItem(STORAGE_KEY_LANG, lang); } catch (_) { /* Session-only preference. */ }
         document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
         applyI18n();
         updateLangToggleUI();
@@ -637,20 +637,21 @@
         var btn = document.getElementById('lang-toggle-btn');
         var label = document.getElementById('lang-toggle-label');
         if (btn) {
-            btn.title = currentLang === 'zh' ? 'Switch to English' : '切换到中文';
+            btn.title = currentLang === 'zh' ? 'Switch to English' : 'Switch to Chinese';
         }
         if (label) {
-            label.textContent = currentLang === 'zh' ? 'EN' : '中';
+            label.textContent = currentLang === 'zh' ? 'EN' : 'ZH';
         }
     }
 
     // Auto-init
     (function init() {
-        var saved = localStorage.getItem(STORAGE_KEY_LANG);
+        var saved;
+        try { saved = localStorage.getItem(STORAGE_KEY_LANG); } catch (_) { /* Use the default language. */ }
         if (saved === 'zh' || saved === 'en') {
             currentLang = saved;
         } else {
-            currentLang = (navigator.language || '').startsWith('zh') ? 'zh' : 'en';
+            currentLang = 'en';
         }
         document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
 

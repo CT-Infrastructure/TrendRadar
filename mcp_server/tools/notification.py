@@ -54,15 +54,15 @@ _CHANNEL_REQUIREMENTS = {
 
 # 渠道显示名称
 _CHANNEL_NAMES = {
-    "feishu": "飞书",
-    "dingtalk": "钉钉",
-    "wework": "企业微信",
+    "feishu": "Feishu",
+    "dingtalk": "DingTalk",
+    "wework": "WeCom",
     "telegram": "Telegram",
-    "email": "邮件",
+    "email": "Email",
     "ntfy": "ntfy",
     "bark": "Bark",
     "slack": "Slack",
-    "generic_webhook": "通用 Webhook",
+    "generic_webhook": "Generic Webhook",
 }
 
 
@@ -224,258 +224,184 @@ def _prepare_batches(message: str, channel_id: str, batch_sizes: Dict = None) ->
 
     return batches
 
-CHANNEL_FORMAT_GUIDES = {
-    "feishu": {
-        "name": "飞书",
-        "format": "Markdown（卡片消息）",
-        "max_length": "约 29000 字节",
-        "supported": [
-            "**粗体**",
-            "[链接文本](URL)",
-            "<font color='red/green/grey/orange/blue'>彩色文本</font>",
-            "---（分割线）",
-            "换行分隔段落",
-        ],
-        "unsupported": [
-            "# 标题语法（不渲染为标题样式）",
-            "> 引用块",
-            "表格 / 图片嵌入",
-        ],
-        "prompt": (
-            "飞书卡片 Markdown 格式化策略：\n"
-            "1. 用 **粗体** 作小标题和重点词\n"
-            "2. 用 <font color='red'>红色</font> 标记紧急/重要内容\n"
-            "3. 用 <font color='grey'>灰色</font> 标记辅助信息（时间、来源）\n"
-            "4. 用 <font color='orange'>橙色</font> 标记警告\n"
-            "5. 用 <font color='green'>绿色</font> 标记正面/成功信息\n"
-            "6. 用 [文本](URL) 添加可点击链接\n"
-            "7. 用 --- 分割不同主题区域\n"
-            "8. 不要用 # 标题语法（卡片内不渲染）\n"
-            "9. 不要用 > 引用语法\n"
-            "10. 用换行 + 粗体模拟层级结构"
-        ),
-    },
-    "dingtalk": {
-        "name": "钉钉",
-        "format": "Markdown",
-        "max_length": "约 20000 字节",
-        "supported": [
-            "### 三级标题 / #### 四级标题",
-            "**粗体**",
-            "[链接文本](URL)",
-            "> 引用块",
-            "---（分割线）",
-            "- 无序列表 / 1. 有序列表",
-        ],
-        "unsupported": [
-            "# 一级标题 / ## 二级标题（可能不渲染）",
-            "<font> 彩色文本",
-            "~~删除线~~",
-            "表格 / 图片嵌入",
-        ],
-        "prompt": (
-            "钉钉 Markdown 格式化策略：\n"
-            "1. 用 ### 或 #### 作章节标题（不用 # 和 ##）\n"
-            "2. 用 **粗体** 突出关键词和数据\n"
-            "3. 用 > 引用块展示备注或补充说明\n"
-            "4. 用 --- 分割不同主题区域\n"
-            "5. 用 [文本](URL) 添加可点击链接\n"
-            "6. 用有序列表（1. 2. 3.）组织要点\n"
-            "7. 不要用 <font> 颜色标签（钉钉不支持）\n"
-            "8. 不要用删除线语法\n"
-            "9. 标题和正文之间加空行提升可读性"
-        ),
-    },
-    "wework": {
-        "name": "企业微信",
-        "format": "Markdown（群机器人）/ 纯文本（个人微信）",
-        "max_length": "约 4000 字节",
-        "supported": [
-            "**粗体**",
-            "[链接文本](URL)",
-            "> 引用块（仅首行生效）",
-        ],
-        "unsupported": [
-            "# 标题语法",
-            "---（水平分割线）",
-            "<font> 彩色文本",
-            "~~删除线~~",
-            "表格 / 图片嵌入 / 有序列表",
-        ],
-        "prompt": (
-            "企业微信 Markdown 格式化策略：\n"
-            "1. 用 **粗体** 作小标题和重点词\n"
-            "2. 用 [文本](URL) 添加可点击链接\n"
-            "3. 用 > 引用块展示备注（仅首行生效）\n"
-            "4. 内容要简洁，受 4KB 限制\n"
-            "5. 不要用 # 标题语法（不渲染）\n"
-            "6. 不要用 ---（不渲染），用多个换行分隔区域\n"
-            "7. 不要用 <font> 颜色标签\n"
-            "8. 不要用删除线和有序列表\n"
-            "9. 用换行 + 粗体模拟层级结构\n"
-            "10. 个人微信模式下所有格式被剥离为纯文本"
-        ),
-    },
-    "telegram": {
-        "name": "Telegram",
-        "format": "HTML（自动从 Markdown 转换）",
-        "max_length": "约 4096 字符",
-        "supported": [
-            "<b>粗体</b>（从 **粗体** 转换）",
-            "<i>斜体</i>（从 *斜体* 转换）",
-            "<s>删除线</s>（从 ~~删除线~~ 转换）",
-            "<code>行内代码</code>（从 `代码` 转换）",
-            "<a href='URL'>链接</a>（从 [文本](URL) 转换）",
-            "<blockquote>引用块</blockquote>（从 > 引用 转换）",
-        ],
-        "unsupported": [
-            "# 标题语法（自动剥离 # 前缀）",
-            "---（分割线，自动剥离）",
-            "<font> 彩色文本（自动剥离）",
-            "表格 / 图片嵌入",
-        ],
-        "prompt": (
-            "Telegram HTML 格式化策略（输入仍为 Markdown，自动转换为 HTML）：\n"
-            "1. 用 **粗体** 突出关键词（转为 <b>）\n"
-            "2. 用 *斜体* 标记辅助信息（转为 <i>）\n"
-            "3. 用 `代码` 标记数据值/时间（转为 <code>）\n"
-            "4. 用 [文本](URL) 添加链接（转为 <a>）\n"
-            "5. 用 > 开头的行作引用块（转为 <blockquote>）\n"
-            "6. 不要用 # 标题（Telegram 无标题样式，仅剥离 #）\n"
-            "7. 不要用 --- 分割线（被剥离），用空行分隔\n"
-            "8. 不要用 <font> 颜色标签（被剥离）\n"
-            "9. 内容受 4096 字符限制，保持简洁\n"
-            "10. 链接默认禁用预览，适合信息密集型消息"
-        ),
-    },
-    "email": {
-        "name": "邮件",
-        "format": "HTML（完整网页，从 Markdown 转换）",
-        "max_length": "无硬限制",
-        "supported": [
-            "# / ## / ### 标题（转为 <h1>/<h2>/<h3>）",
-            "**粗体** / *斜体* / ~~删除线~~",
-            "[链接文本](URL)",
-            "`行内代码`",
-            "---（水平分割线）",
-        ],
-        "unsupported": [
-            "<font> 彩色文本（转义显示）",
-            "复杂表格",
-        ],
-        "prompt": (
-            "邮件 HTML 格式化策略（输入为 Markdown，自动转换为带样式 HTML）：\n"
-            "1. 用 # / ## / ### 创建清晰的标题层级\n"
-            "2. 用 **粗体** 和 *斜体* 增强可读性\n"
-            "3. 用 [文本](URL) 添加链接（蓝色可点击）\n"
-            "4. 用 --- 分割不同章节\n"
-            "5. 用 `代码` 标记技术术语或数据\n"
-            "6. 可以写较长内容，邮件无严格长度限制\n"
-            "7. 邮件主题自动追加日期时间\n"
-            "8. 自动附带纯文本备用版本"
-        ),
-    },
-    "ntfy": {
-        "name": "ntfy",
-        "format": "Markdown（原生支持）",
-        "max_length": "约 3800 字节（单条 4KB 限制）",
-        "supported": [
-            "**粗体** / *斜体*",
-            "[链接文本](URL)",
-            "> 引用块",
-            "`行内代码`",
-            "- 列表",
-        ],
-        "unsupported": [
-            "# 标题语法（渲染取决于客户端）",
-            "<font> 彩色文本",
-            "---（渲染取决于客户端）",
-            "表格",
-        ],
-        "prompt": (
-            "ntfy Markdown 格式化策略：\n"
-            "1. 用 **粗体** 突出关键词\n"
-            "2. 用 [文本](URL) 添加可点击链接\n"
-            "3. 用 > 引用块展示备注\n"
-            "4. 用 `代码` 标记数据值\n"
-            "5. 内容要精炼，受 4KB 限制\n"
-            "6. 不要用 <font> 颜色标签（无效）\n"
-            "7. 不要依赖 # 标题和 --- 分割线\n"
-            "8. 用空行和粗体组织信息层级"
-        ),
-    },
-    "bark": {
-        "name": "Bark",
-        "format": "Markdown（iOS 推送）",
-        "max_length": "约 3600 字节（APNs 4KB 限制）",
-        "supported": [
-            "**粗体**",
-            "[链接文本](URL)",
-            "基础文本格式",
-        ],
-        "unsupported": [
-            "# 标题语法",
-            "<font> 彩色文本",
-            "---（分割线）",
-            "> 引用块",
-            "复杂嵌套格式",
-        ],
-        "prompt": (
-            "Bark 格式化策略（iOS 推送通知）：\n"
-            "1. 内容要极度精简，移动端阅读场景\n"
-            "2. 用 **粗体** 标记核心信息\n"
-            "3. 用 [文本](URL) 添加链接\n"
-            "4. 不要用标题/颜色/引用等复杂格式\n"
-            "5. 受 APNs 4KB 限制，控制内容长度\n"
-            "6. 层级结构靠缩进和换行实现\n"
-            "7. 适合简短通知和摘要，不适合长文"
-        ),
-    },
-    "slack": {
-        "name": "Slack",
-        "format": "mrkdwn（Slack 专有格式，自动从 Markdown 转换）",
-        "max_length": "约 4000 字节",
-        "supported": [
-            "*粗体*（从 **粗体** 转换）",
-            "_斜体_",
-            "~删除线~（从 ~~删除线~~ 转换）",
-            "<URL|链接文本>（从 [文本](URL) 转换）",
-            "`行内代码`",
-            "```代码块```",
-            "> 引用块",
-        ],
-        "unsupported": [
-            "# 标题语法（剥离为粗体）",
-            "<font> 彩色文本",
-            "--- 分割线（渲染不稳定）",
-            "表格",
-        ],
-        "prompt": (
-            "Slack mrkdwn 格式化策略（输入为 Markdown，自动转换为 mrkdwn）：\n"
-            "1. 用 **粗体** 突出关键词（转为 *粗体*）\n"
-            "2. 用 ~~删除线~~ 标记过时信息（转为 ~删除线~）\n"
-            "3. 用 [文本](URL) 添加链接（转为 <URL|文本>）\n"
-            "4. 用 > 引用块展示备注\n"
-            "5. 用 `代码` 标记数据值\n"
-            "6. 不要用 # 标题（Slack 无标题样式）\n"
-            "7. 不要用 <font> 颜色标签\n"
-            "8. 用空行和粗体组织信息层级"
-        ),
-    },
-    "generic_webhook": {
-        "name": "通用 Webhook",
-        "format": "Markdown（或自定义模板）",
-        "max_length": "约 4000 字节",
-        "supported": ["标准 Markdown 语法"],
-        "unsupported": ["取决于接收端"],
-        "prompt": (
-            "通用 Webhook 格式化策略：\n"
-            "1. 使用标准 Markdown 格式\n"
-            "2. 避免使用特殊平台专有语法\n"
-            "3. 如配置了自定义模板，内容会填充到 {content} 占位符"
-        ),
-    },
-}
+CHANNEL_FORMAT_GUIDES = {'feishu': {'name': 'Feishu',
+            'format': 'Markdown (card messages)',
+            'max_length': 'About 29000 bytes',
+            'supported': ['**bold**',
+                          '[link text](URL)',
+                          "<font color='red/green/grey/orange/blue'>colored text</font>",
+                          '--- (horizontal rule)',
+                          'Paragraphs separated by line breaks'],
+            'unsupported': ['# headings (not rendered as headings)',
+                            '> blockquotes',
+                            'Tables / embedded images'],
+            'prompt': 'Feishu card Markdown formatting:\n'
+                      '1. Use **bold** for subheadings and important words.\n'
+                      "2. Use <font color='red'>red</font> for urgent or important information.\n"
+                      "3. Use <font color='grey'>gray</font> for supporting details, times, and sources.\n"
+                      "4. Use <font color='orange'>orange</font> for warnings.\n"
+                      "5. Use <font color='green'>green</font> for positive or successful outcomes.\n"
+                      '6. Use [text](URL) for clickable links.\n'
+                      '7. Separate topics with ---.\n'
+                      '8. Do not use # headings; they do not render inside cards.\n'
+                      '9. Do not use > blockquotes.\n'
+                      '10. Use line breaks and bold text to show hierarchy.'},
+ 'dingtalk': {'name': 'DingTalk',
+              'format': 'Markdown',
+              'max_length': 'About 20000 bytes',
+              'supported': ['### level 3 headings / #### level 4 headings',
+                            '**bold**',
+                            '[link text](URL)',
+                            '> blockquotes',
+                            '--- (horizontal rule)',
+                            '- unordered lists / 1. ordered lists'],
+              'unsupported': ['# level 1 / ## level 2 headings (may not render)',
+                              '<font> colored text',
+                              '~~strikethrough~~',
+                              'Tables / embedded images'],
+              'prompt': 'DingTalk Markdown formatting:\n'
+                        '1. Use ### or #### for section headings, not # or ##.\n'
+                        '2. Use **bold** for keywords and data.\n'
+                        '3. Use > blockquotes for notes and supporting details.\n'
+                        '4. Separate topics with ---.\n'
+                        '5. Use [text](URL) for clickable links.\n'
+                        '6. Organize key points in numbered lists.\n'
+                        '7. Do not use <font> color tags; DingTalk does not support them.\n'
+                        '8. Do not use strikethrough.\n'
+                        '9. Add a blank line between headings and body text.'},
+ 'wework': {'name': 'WeCom',
+            'format': 'Markdown (group bots) / plain text (personal WeChat)',
+            'max_length': 'About 4000 bytes',
+            'supported': ['**bold**', '[link text](URL)', '> blockquotes (first line only)'],
+            'unsupported': ['# headings',
+                            '--- (horizontal rule)',
+                            '<font> colored text',
+                            '~~strikethrough~~',
+                            'Tables / embedded images / ordered lists'],
+            'prompt': 'WeCom Markdown formatting:\n'
+                      '1. Use **bold** for subheadings and important words.\n'
+                      '2. Use [text](URL) for clickable links.\n'
+                      '3. Use > blockquotes for notes; only the first line is styled.\n'
+                      '4. Keep content concise to fit the 4KB limit.\n'
+                      '5. Do not use # headings; they do not render.\n'
+                      '6. Do not use ---; separate sections with blank lines instead.\n'
+                      '7. Do not use <font> color tags.\n'
+                      '8. Do not use strikethrough or ordered lists.\n'
+                      '9. Use line breaks and bold text to show hierarchy.\n'
+                      '10. Personal WeChat mode strips all formatting to plain text.'},
+ 'telegram': {'name': 'Telegram',
+              'format': 'HTML (converted automatically from Markdown)',
+              'max_length': 'About 4096 characters',
+              'supported': ['<b>bold</b> (from **bold**)',
+                            '<i>italic</i> (from *italic*)',
+                            '<s>strikethrough</s> (from ~~strikethrough~~)',
+                            '<code>inline code</code> (from `code`)',
+                            "<a href='URL'>link</a> (from [text](URL))",
+                            '<blockquote>quote</blockquote> (from > quote)'],
+              'unsupported': ['# headings (# prefix is stripped)',
+                              '--- (horizontal rules are stripped)',
+                              '<font> colored text (tags are stripped)',
+                              'Tables / embedded images'],
+              'prompt': 'Telegram HTML formatting (input is Markdown, converted automatically to HTML):\n'
+                        '1. Use **bold** for keywords; it becomes <b>.\n'
+                        '2. Use *italic* for supporting details; it becomes <i>.\n'
+                        '3. Use `code` for data values and times; it becomes <code>.\n'
+                        '4. Use [text](URL) for links; it becomes <a>.\n'
+                        '5. Use lines starting with > for quotes; they become <blockquote>.\n'
+                        '6. Do not use # headings; Telegram has no heading style and # is stripped.\n'
+                        '7. Do not use ---; it is stripped. Separate sections with blank lines.\n'
+                        '8. Do not use <font> color tags; they are stripped.\n'
+                        '9. Keep messages within the 4096-character limit.\n'
+                        '10. Link previews are disabled by default for compact messages.'},
+ 'email': {'name': 'Email',
+           'format': 'HTML (full page converted from Markdown)',
+           'max_length': 'No hard limit',
+           'supported': ['# / ## / ### headings (converted to <h1>/<h2>/<h3>)',
+                         '**bold** / *italic* / ~~strikethrough~~',
+                         '[link text](URL)',
+                         '`inline code`',
+                         '--- (horizontal rule)'],
+           'unsupported': ['<font> colored text (escaped)', 'Complex tables'],
+           'prompt': 'Email HTML formatting (Markdown input is converted to styled HTML):\n'
+                     '1. Use #, ##, and ### for a clear heading hierarchy.\n'
+                     '2. Use **bold** and *italic* for readability.\n'
+                     '3. Use [text](URL) for clickable links, rendered in blue.\n'
+                     '4. Separate sections with ---.\n'
+                     '5. Use `code` for technical terms and data.\n'
+                     '6. Longer content is supported; email has no strict length limit here.\n'
+                     '7. The date and time are appended to the email subject automatically.\n'
+                     '8. A plain-text alternative is included automatically.'},
+ 'ntfy': {'name': 'ntfy',
+          'format': 'Markdown (native support)',
+          'max_length': 'About 3800 bytes (4KB per-message limit)',
+          'supported': ['**bold** / *italic*',
+                        '[link text](URL)',
+                        '> blockquotes',
+                        '`inline code`',
+                        '- lists'],
+          'unsupported': ['# headings (client-dependent)',
+                          '<font> colored text',
+                          '--- (client-dependent)',
+                          'Tables'],
+          'prompt': 'ntfy Markdown formatting:\n'
+                    '1. Use **bold** for keywords.\n'
+                    '2. Use [text](URL) for clickable links.\n'
+                    '3. Use > blockquotes for notes.\n'
+                    '4. Use `code` for data values.\n'
+                    '5. Keep content concise to fit the 4KB limit.\n'
+                    '6. Do not use <font> color tags; they have no effect.\n'
+                    '7. Do not rely on # headings or --- horizontal rules.\n'
+                    '8. Organize content with blank lines and bold text.'},
+ 'bark': {'name': 'Bark',
+          'format': 'Markdown (iOS notifications)',
+          'max_length': 'About 3600 bytes (APNs 4KB limit)',
+          'supported': ['**bold**', '[link text](URL)', 'Basic text formatting'],
+          'unsupported': ['# headings',
+                          '<font> colored text',
+                          '--- (horizontal rule)',
+                          '> blockquotes',
+                          'Complex nested formatting'],
+          'prompt': 'Bark formatting for iOS notifications:\n'
+                    '1. Keep content very short for mobile reading.\n'
+                    '2. Use **bold** for key information.\n'
+                    '3. Use [text](URL) for links.\n'
+                    '4. Avoid complex headings, colors, and blockquotes.\n'
+                    '5. Keep the payload within the APNs 4KB limit.\n'
+                    '6. Use indentation and line breaks to show hierarchy.\n'
+                    '7. Prefer brief notifications and summaries over long articles.'},
+ 'slack': {'name': 'Slack',
+           'format': 'mrkdwn (Slack format, converted automatically from Markdown)',
+           'max_length': 'About 4000 bytes',
+           'supported': ['*bold* (from **bold**)',
+                         '_italic_',
+                         '~strikethrough~ (from ~~strikethrough~~)',
+                         '<URL|link text> (from [text](URL))',
+                         '`inline code`',
+                         '```code blocks```',
+                         '> blockquotes'],
+           'unsupported': ['# headings (converted to bold)',
+                           '<font> colored text',
+                           '--- horizontal rules (inconsistent rendering)',
+                           'Tables'],
+           'prompt': 'Slack mrkdwn formatting (Markdown input is converted automatically):\n'
+                     '1. Use **bold** for keywords; it becomes *bold*.\n'
+                     '2. Use ~~strikethrough~~ for outdated information; it becomes ~strikethrough~.\n'
+                     '3. Use [text](URL) for links; it becomes <URL|text>.\n'
+                     '4. Use > blockquotes for notes.\n'
+                     '5. Use `code` for data values.\n'
+                     '6. Do not use # headings; Slack has no heading style.\n'
+                     '7. Do not use <font> color tags.\n'
+                     '8. Organize content with blank lines and bold text.'},
+ 'generic_webhook': {'name': 'Generic Webhook',
+                     'format': 'Markdown (or a custom template)',
+                     'max_length': 'About 4000 bytes',
+                     'supported': ['Standard Markdown syntax'],
+                     'unsupported': ['Depends on the receiving service'],
+                     'prompt': 'Generic webhook formatting:\n'
+                               '1. Use standard Markdown.\n'
+                               '2. Avoid platform-specific syntax.\n'
+                               '3. If a custom template is configured, the content is inserted into its '
+                               '{content} placeholder.'}}
 
 
 # ==================== 渠道 Markdown 适配 ====================
@@ -712,7 +638,7 @@ def _markdown_to_simple_html(text: str) -> str:
     html = html.replace('\n', '<br>\n')
 
     return f"""<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>TrendRadar 通知</title>
+<html lang="en"><head><meta charset="utf-8"><title>TrendRadar Notification</title>
 <style>body{{font-family:sans-serif;padding:20px;max-width:800px;margin:0 auto}}
 a{{color:#1a73e8}}h1,h2,h3{{color:#333}}hr{{border:none;border-top:1px solid #ddd;margin:16px 0}}
 code{{background:#f5f5f5;padding:2px 6px;border-radius:3px}}</style>
@@ -825,7 +751,7 @@ def _send_email(
         msg["To"] = ", ".join(recipients)
 
         now = datetime.now()
-        msg["Subject"] = Header(f"{title} - {now.strftime('%m月%d日 %H:%M')}", "utf-8")
+        msg["Subject"] = Header(f"{title} - {now.strftime('%Y-%m-%d %H:%M')}", "utf-8")
         msg["MIME-Version"] = "1.0"
         msg["Date"] = formatdate(localtime=True)
         msg["Message-ID"] = make_msgid()
@@ -885,7 +811,7 @@ def _send_ntfy(server_url: str, topic: str, content: str, title: str, token: str
             ok = retry_resp.status_code == 200
             return {"success": ok, "detail": "" if ok else f"retry status={retry_resp.status_code}"}
         elif resp.status_code == 413:
-            return {"success": False, "detail": f"消息过大被拒绝 ({len(content.encode('utf-8'))} bytes)"}
+            return {"success": False, "detail": f"Message rejected because it is too large ({len(content.encode('utf-8'))} bytes)"}
         else:
             return {"success": False, "detail": f"status={resp.status_code}"}
     except Exception as e:
@@ -897,7 +823,7 @@ def _send_bark(bark_url: str, content: str, title: str) -> Dict:
     parsed = urlparse(bark_url)
     device_key = parsed.path.strip('/').split('/')[0] if parsed.path else None
     if not device_key:
-        return {"success": False, "detail": f"无法从 URL 提取 device_key: {bark_url}"}
+        return {"success": False, "detail": f"Could not extract device_key from URL: {bark_url}"}
 
     api_endpoint = f"{parsed.scheme}://{parsed.netloc}/push"
     payload = {
@@ -1017,8 +943,8 @@ class NotificationTools:
                     "success": False,
                     "error": {
                         "code": "INVALID_CHANNEL",
-                        "message": f"无效的渠道: {channel}",
-                        "suggestion": f"支持的渠道: {valid}",
+                        "message": f"Invalid channel: {channel}",
+                        "suggestion": f"Supported channels: {valid}",
                     },
                 }
             guide = CHANNEL_FORMAT_GUIDES[channel]
@@ -1030,7 +956,7 @@ class NotificationTools:
         else:
             return {
                 "success": True,
-                "summary": f"共 {len(CHANNEL_FORMAT_GUIDES)} 个渠道的格式化策略",
+                "summary": f"Formatting guides for {len(CHANNEL_FORMAT_GUIDES)} channels",
                 "guides": CHANNEL_FORMAT_GUIDES,
             }
 
@@ -1096,7 +1022,7 @@ class NotificationTools:
             return {
                 "success": True,
                 "notification_enabled": enabled,
-                "summary": f"{configured_count}/{len(channels)} 个渠道已配置",
+                "summary": f"{configured_count}/{len(channels)} channels configured",
                 "channels": channels,
             }
         except Exception as e:
@@ -1108,7 +1034,7 @@ class NotificationTools:
     def send_notification(
         self,
         message: str,
-        title: str = "TrendRadar 通知",
+        title: str = "TrendRadar Notification",
         channels: Optional[List[str]] = None,
     ) -> Dict:
         """
@@ -1128,7 +1054,7 @@ class NotificationTools:
         if not message or not message.strip():
             return {
                 "success": False,
-                "error": {"code": "EMPTY_MESSAGE", "message": "消息内容不能为空"},
+                "error": {"code": "EMPTY_MESSAGE", "message": "Message content cannot be empty"},
             }
 
         try:
@@ -1137,7 +1063,7 @@ class NotificationTools:
             if not config.get("ENABLE_NOTIFICATION", True):
                 return {
                     "success": False,
-                    "error": {"code": "NOTIFICATION_DISABLED", "message": "通知功能已禁用（notification.enabled = false）"},
+                    "error": {"code": "NOTIFICATION_DISABLED", "message": "Notifications are disabled (notification.enabled = false)"},
                 }
 
             # 确定目标渠道
@@ -1147,8 +1073,8 @@ class NotificationTools:
                 invalid = [ch for ch in channels if ch not in all_channel_ids]
                 if invalid:
                     raise InvalidParameterError(
-                        f"无效的渠道: {invalid}",
-                        suggestion=f"支持的渠道: {all_channel_ids}"
+                        f"Invalid channel: {invalid}",
+                        suggestion=f"Supported channels: {all_channel_ids}"
                     )
                 target_channels = channels
             else:
@@ -1163,8 +1089,8 @@ class NotificationTools:
                     "success": False,
                     "error": {
                         "code": "NO_CHANNELS",
-                        "message": "没有已配置的目标渠道",
-                        "suggestion": "请在 config.yaml 或 .env 中配置至少一个通知渠道",
+                        "message": "No configured destination channels",
+                        "suggestion": "Configure at least one notification channel in config.yaml or .env",
                     },
                 }
 
@@ -1173,7 +1099,7 @@ class NotificationTools:
             for ch_id in target_channels:
                 required_keys = _CHANNEL_REQUIREMENTS[ch_id]
                 if not all(config.get(k) for k in required_keys):
-                    results[ch_id] = {"success": False, "detail": "渠道未配置"}
+                    results[ch_id] = {"success": False, "detail": "Channel is not configured"}
                     continue
 
                 result = self._dispatch_to_channel(ch_id, config, message, title)
@@ -1184,7 +1110,7 @@ class NotificationTools:
 
             return {
                 "success": success_count > 0,
-                "summary": f"{success_count}/{total} 个渠道发送成功",
+                "summary": f"{success_count}/{total} channels sent successfully",
                 "results": {
                     ch_id: {
                         "name": _CHANNEL_NAMES.get(ch_id, ch_id),
@@ -1275,7 +1201,7 @@ class NotificationTools:
                 batch_interval,
             )
         else:
-            return {"success": False, "detail": f"未知渠道: {channel_id}"}
+            return {"success": False, "detail": f"Unknown channel: {channel_id}"}
 
     def _get_batch_sizes(self) -> Dict:
         """从 config.yaml 读取 advanced.batch_size，合并到默认值"""
@@ -1319,7 +1245,7 @@ class NotificationTools:
         """多账号 × 逐批发送（; 分隔的 URL）"""
         urls = [u.strip() for u in urls_str.split(";") if u.strip()]
         if not urls:
-            return {"success": False, "detail": "URL 为空"}
+            return {"success": False, "detail": "URL is empty"}
 
         any_ok = False
         details = []
@@ -1348,7 +1274,7 @@ class NotificationTools:
         tokens = config["TELEGRAM_BOT_TOKEN"].split(";")
         chat_ids = config["TELEGRAM_CHAT_ID"].split(";")
         if len(tokens) != len(chat_ids):
-            return {"success": False, "detail": "bot_token 和 chat_id 数量不一致"}
+            return {"success": False, "detail": "bot_token and chat_id counts do not match"}
 
         any_ok = False
         details = []
@@ -1381,7 +1307,7 @@ class NotificationTools:
         tokens_str = config.get("NTFY_TOKEN", "")
         tokens = tokens_str.split(";") if tokens_str else [""]
         if len(servers) != len(topics):
-            return {"success": False, "detail": "server_url 和 topic 数量不一致"}
+            return {"success": False, "detail": "server_url and topic counts do not match"}
 
         any_ok = False
         details = []

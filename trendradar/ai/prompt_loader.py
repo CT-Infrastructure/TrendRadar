@@ -33,7 +33,7 @@ def load_prompt_template(
     prompt_path = config_dir / prompt_file
 
     if not prompt_path.exists():
-        print(f"[{label}] 提示词文件不存在: {prompt_path}")
+        print(f"[{label}] Prompt file does not exist: {prompt_path}")
         return "", ""
 
     content = prompt_path.read_text(encoding="utf-8")

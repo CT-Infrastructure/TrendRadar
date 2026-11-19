@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-新闻爬虫容器管理工具 - supercronic
+News crawler container management - supercronic
 """
 
 import os
@@ -19,104 +19,104 @@ WEBSERVER_PID_FILE = "/tmp/webserver.pid"
 
 
 def manual_run():
-    """手动执行一次爬虫"""
-    print("🔄 手动执行爬虫...")
+    """Run the crawler once"""
+    print("🔄 Running the crawler manually...")
     try:
         result = subprocess.run(
             ["python", "-m", "trendradar"], cwd="/app", capture_output=False, text=True
         )
         if result.returncode == 0:
-            print("✅ 执行完成")
+            print("✅ Run completed")
         else:
-            print(f"❌ 执行失败，退出码: {result.returncode}")
+            print(f"❌ Run failed; exit code: {result.returncode}")
     except Exception as e:
-        print(f"❌ 执行出错: {e}")
+        print(f"❌ Execution error: {e}")
 
 
 def parse_cron_schedule(cron_expr):
-    """解析cron表达式并返回人类可读的描述"""
-    if not cron_expr or cron_expr == "未设置":
-        return "未设置"
+    """Return a readable description of a cron expression."""
+    if not cron_expr or cron_expr == "Not set":
+        return "Not set"
     
     try:
         parts = cron_expr.strip().split()
         if len(parts) != 5:
-            return f"原始表达式: {cron_expr}"
+            return f"Expression: {cron_expr}"
         
         minute, hour, day, month, weekday = parts
         
         # 分析分钟
         if minute == "*":
-            minute_desc = "每分钟"
+            minute_desc = "every minute"
         elif minute.startswith("*/"):
             interval = minute[2:]
-            minute_desc = f"每{interval}分钟"
+            minute_desc = f"every {interval} minutes"
         elif "," in minute:
-            minute_desc = f"在第{minute}分钟"
+            minute_desc = f"at minute {minute}"
         else:
-            minute_desc = f"在第{minute}分钟"
+            minute_desc = f"at minute {minute}"
         
         # 分析小时
         if hour == "*":
-            hour_desc = "每小时"
+            hour_desc = "every hour"
         elif hour.startswith("*/"):
             interval = hour[2:]
-            hour_desc = f"每{interval}小时"
+            hour_desc = f"every {interval} hours"
         elif "," in hour:
-            hour_desc = f"在{hour}点"
+            hour_desc = f"at hour {hour}"
         else:
-            hour_desc = f"在{hour}点"
+            hour_desc = f"at hour {hour}"
         
         # 分析日期
         if day == "*":
-            day_desc = "每天"
+            day_desc = "daily"
         elif day.startswith("*/"):
             interval = day[2:]
-            day_desc = f"每{interval}天"
+            day_desc = f"every {interval} days"
         else:
-            day_desc = f"每月{day}号"
+            day_desc = f"on day {day} of the month"
         
         # 分析月份
         if month == "*":
-            month_desc = "每月"
+            month_desc = "monthly"
         else:
-            month_desc = f"在{month}月"
+            month_desc = f"in month {month}"
         
         # 分析星期
         weekday_names = {
-            "0": "周日", "1": "周一", "2": "周二", "3": "周三", 
-            "4": "周四", "5": "周五", "6": "周六", "7": "周日"
+            "0": "Sunday", "1": "Monday", "2": "Tuesday", "3": "Wednesday",
+            "4": "Thursday", "5": "Friday", "6": "Saturday", "7": "Sunday"
         }
         if weekday == "*":
             weekday_desc = ""
         else:
-            weekday_desc = f"在{weekday_names.get(weekday, weekday)}"
+            weekday_desc = f"on {weekday_names.get(weekday, weekday)}"
         
         # 组合描述
         if minute.startswith("*/") and hour == "*" and day == "*" and month == "*" and weekday == "*":
             # 简单的间隔模式，如 */30 * * * *
-            return f"每{minute[2:]}分钟执行一次"
+            return f"Run every {minute[2:]} minutes"
         elif hour != "*" and minute != "*" and day == "*" and month == "*" and weekday == "*":
-            # 每天特定时间，如 0 9 * * *
-            return f"每天{hour}:{minute.zfill(2)}执行"
+            # daily特定时间，如 0 9 * * *
+            return f"Run daily at {hour}:{minute.zfill(2)}"
         elif weekday != "*" and day == "*":
             # 每周特定时间
-            return f"{weekday_desc}{hour}:{minute.zfill(2)}执行"
+            return f"Run {weekday_desc} at {hour}:{minute.zfill(2)}"
         else:
             # 复杂模式，显示详细信息
-            desc_parts = [part for part in [month_desc, day_desc, weekday_desc, hour_desc, minute_desc] if part and part != "每月" and part != "每天" and part != "每小时"]
+            desc_parts = [part for part in [month_desc, day_desc, weekday_desc, hour_desc, minute_desc] if part and part != "monthly" and part != "daily" and part != "every hour"]
             if desc_parts:
-                return " ".join(desc_parts) + "执行"
+                return "Run " + " ".join(desc_parts)
             else:
-                return f"复杂表达式: {cron_expr}"
+                return f"Cron expression: {cron_expr}"
     
     except Exception as e:
-        return f"解析失败: {cron_expr}"
+        return f"Could not parse: {cron_expr}"
 
 
 def show_status():
     """显示容器状态"""
-    print("📊 容器状态:")
+    print("📊 Container status:")
 
     # 检查 PID 1 状态
     supercronic_is_pid1 = False
@@ -124,66 +124,66 @@ def show_status():
     try:
         with open('/proc/1/cmdline', 'rb') as f:
             pid1_cmdline = f.read().replace(b'\x00', b' ').decode('utf-8', errors='ignore').strip()
-        print(f"  🔍 PID 1 进程: {pid1_cmdline}")
+        print(f"  🔍 PID 1 process: {pid1_cmdline}")
 
         if "supercronic" in pid1_cmdline.lower():
-            print("  ✅ supercronic 正确运行为 PID 1")
+            print("  ✅ supercronic is running correctly as PID 1")
             supercronic_is_pid1 = True
         else:
-            print("  ❌ PID 1 不是 supercronic")
-            print(f"  📋 实际的 PID 1: {pid1_cmdline}")
+            print("  ❌ PID 1 is not supercronic")
+            print(f"  📋 Actual PID 1: {pid1_cmdline}")
     except Exception as e:
-        print(f"  ❌ 无法读取 PID 1 信息: {e}")
+        print(f"  ❌ Could not read PID 1 information: {e}")
 
     # 检查环境变量
-    cron_schedule = os.environ.get("CRON_SCHEDULE", "未设置")
-    run_mode = os.environ.get("RUN_MODE", "未设置")
-    immediate_run = os.environ.get("IMMEDIATE_RUN", "未设置")
+    cron_schedule = os.environ.get("CRON_SCHEDULE", "Not set")
+    run_mode = os.environ.get("RUN_MODE", "Not set")
+    immediate_run = os.environ.get("IMMEDIATE_RUN", "Not set")
     
-    print(f"  ⚙️ 运行配置:")
+    print(f"  ⚙️ Runtime configuration:")
     print(f"    CRON_SCHEDULE: {cron_schedule}")
     
     # 解析并显示cron表达式的含义
     cron_description = parse_cron_schedule(cron_schedule)
-    print(f"    ⏰ 执行频率: {cron_description}")
+    print(f"    ⏰ Run frequency: {cron_description}")
     
     print(f"    RUN_MODE: {run_mode}")
     print(f"    IMMEDIATE_RUN: {immediate_run}")
 
     # 检查配置文件
     config_files = ["/app/config/config.yaml", "/app/config/frequency_words.txt"]
-    print("  📁 配置文件:")
+    print("  📁 Configuration files:")
     for file_path in config_files:
         if Path(file_path).exists():
             print(f"    ✅ {Path(file_path).name}")
         else:
-            print(f"    ❌ {Path(file_path).name} 缺失")
+            print(f"    ❌ {Path(file_path).name} is missing")
 
     # 检查关键文件
     key_files = [
-        ("/usr/local/bin/supercronic-linux-amd64", "supercronic二进制文件"),
-        ("/usr/local/bin/supercronic", "supercronic软链接"),
-        ("/tmp/crontab", "crontab文件"),
-        ("/entrypoint.sh", "启动脚本")
+        ("/usr/local/bin/supercronic-linux-amd64", "supercronic binary"),
+        ("/usr/local/bin/supercronic", "supercronic symlink"),
+        ("/tmp/crontab", "crontab file"),
+        ("/entrypoint.sh", "Entrypoint script")
     ]
     
-    print("  📂 关键文件检查:")
+    print("  📂 Required files:")
     for file_path, description in key_files:
         if Path(file_path).exists():
-            print(f"    ✅ {description}: 存在")
-            # 对于crontab文件，显示内容
+            print(f"    ✅ {description}: present")
+            # 对于crontab file，显示内容
             if file_path == "/tmp/crontab":
                 try:
                     with open(file_path, 'r') as f:
                         crontab_content = f.read().strip()
-                        print(f"         内容: {crontab_content}")
+                        print(f"         Contents: {crontab_content}")
                 except Exception:
                     pass
         else:
-            print(f"    ❌ {description}: 不存在")
+            print(f"    ❌ {description}: missing")
 
     # 检查容器运行时间
-    print("  ⏱️ 容器时间信息:")
+    print("  ⏱️ Container timing:")
     try:
         # 检查 PID 1 的启动时间
         with open('/proc/1/stat', 'r') as f:
@@ -212,57 +212,57 @@ def show_status():
                     uptime_hours = uptime_minutes // 60
                     
                     if uptime_hours > 0:
-                        print(f"    PID 1 运行时间: {uptime_hours} 小时 {uptime_minutes % 60} 分钟")
+                        print(f"    PID 1 uptime: {uptime_hours} hours {uptime_minutes % 60} minutes")
                     else:
-                        print(f"    PID 1 运行时间: {uptime_minutes} 分钟 ({uptime_seconds} 秒)")
+                        print(f"    PID 1 uptime: {uptime_minutes} minutes ({uptime_seconds} seconds)")
                 else:
-                    print(f"    PID 1 运行时间: 无法精确计算")
+                    print(f"    PID 1 uptime: unable to calculate precisely")
             else:
-                print("    ❌ 无法解析 PID 1 统计信息")
+                print("    ❌ Could not parse PID 1 statistics")
     except Exception as e:
-        print(f"    ❌ 时间检查失败: {e}")
+        print(f"    ❌ Time check failed: {e}")
 
     # 状态总结和建议
-    print("  📊 状态总结:")
+    print("  📊 Status summary:")
     if supercronic_is_pid1:
-        print("    ✅ supercronic 正确运行为 PID 1")
-        print("    ✅ 定时任务应该正常工作")
+        print("    ✅ supercronic is running correctly as PID 1")
+        print("    ✅ Scheduled tasks should run normally")
         
         # 显示当前的调度信息
-        if cron_schedule != "未设置":
-            print(f"    ⏰ 当前调度: {cron_description}")
+        if cron_schedule != "Not set":
+            print(f"    ⏰ Current schedule: {cron_description}")
             
             # 提供一些常见的调度建议
-            if "分钟" in cron_description and "每30分钟" not in cron_description and "每60分钟" not in cron_description:
-                print("    💡 频繁执行模式，适合实时监控")
-            elif "小时" in cron_description:
-                print("    💡 按小时执行模式，适合定期汇总")
-            elif "天" in cron_description:
-                print("    💡 每日执行模式，适合日报生成")
+            if "minute" in cron_description and "every 30 minutes" not in cron_description and "every 60 minutes" not in cron_description:
+                print("    💡 Frequent runs, suitable for live monitoring")
+            elif "hour" in cron_description:
+                print("    💡 Hourly runs, suitable for periodic summaries")
+            elif "daily" in cron_description or "day" in cron_description:
+                print("    💡 Daily runs, suitable for daily reports")
         
-        print("    💡 如果定时任务不执行，检查:")
-        print("       • crontab 格式是否正确")
-        print("       • 时区设置是否正确")
-        print("       • 应用程序是否有错误")
+        print("    💡 If scheduled tasks do not run, check:")
+        print("       • The crontab syntax")
+        print("       • The timezone setting")
+        print("       • Application errors")
     else:
-        print("    ❌ supercronic 状态异常")
+        print("    ❌ supercronic is not running as expected")
         if pid1_cmdline:
-            print(f"    📋 当前 PID 1: {pid1_cmdline}")
-        print("    💡 建议操作:")
-        print("       • 重启容器: docker restart trendradar")
-        print("       • 检查容器日志: docker logs trendradar")
+            print(f"    📋 Current PID 1: {pid1_cmdline}")
+        print("    💡 Suggested steps:")
+        print("       • Restart the container: docker restart trendradar")
+        print("       • Check container logs: docker logs trendradar")
 
     # 显示日志检查建议
-    print("  📋 运行状态检查:")
-    print("    • 查看完整容器日志: docker logs trendradar")
-    print("    • 查看实时日志: docker logs -f trendradar")
-    print("    • 手动执行测试: python manage.py run")
-    print("    • 重启容器服务: docker restart trendradar")
+    print("  📋 Runtime diagnostics:")
+    print("    • View full container logs: docker logs trendradar")
+    print("    • Follow live logs: docker logs -f trendradar")
+    print("    • Run manually: python manage.py run")
+    print("    • Restart the container: docker restart trendradar")
 
 
 def show_config():
     """显示当前配置"""
-    print("⚙️ 当前配置:")
+    print("⚙️ Current configuration:")
 
     env_vars = [
         # 运行配置
@@ -295,10 +295,10 @@ def show_config():
     ]
 
     for var in env_vars:
-        value = os.environ.get(var, "未设置")
+        value = os.environ.get(var, "Not set")
         # 隐藏敏感信息
         if var == "BARK_URL" or any(sensitive in var for sensitive in ["WEBHOOK", "TOKEN", "KEY", "SECRET"]):
-            if value and value != "未设置":
+            if value and value != "Not set":
                 masked_value = value[:10] + "***" if len(value) > 10 else "***"
                 print(f"  {var}: {masked_value}")
             else:
@@ -308,24 +308,24 @@ def show_config():
 
     crontab_file = "/tmp/crontab"
     if Path(crontab_file).exists():
-        print("  📅 Crontab内容:")
+        print("  📅 Crontab contents:")
         try:
             with open(crontab_file, "r") as f:
                 content = f.read().strip()
                 print(f"    {content}")
         except Exception as e:
-            print(f"    读取失败: {e}")
+            print(f"    Read failed: {e}")
     else:
-        print("  📅 Crontab文件不存在")
+        print("  📅 Crontab file does not exist")
 
 
 def show_files():
     """显示输出文件"""
-    print("📁 输出文件:")
+    print("📁 Output files:")
 
     output_dir = Path("/app/output")
     if not output_dir.exists():
-        print("  📭 输出目录不存在")
+        print("  📭 Output directory does not exist")
         return
 
     # 新结构：扁平化目录
@@ -339,58 +339,58 @@ def show_files():
     if news_dir.exists():
         db_files = sorted(news_dir.glob("*.db"), key=lambda x: x.name, reverse=True)
         if db_files:
-            print(f"  💾 热榜数据库 (news/): {len(db_files)} 个")
+            print(f"  💾 Trending news databases (news/): {len(db_files)}")
             for db_file in db_files[:5]:
                 mtime = time.ctime(db_file.stat().st_mtime)
                 size_kb = db_file.stat().st_size // 1024
                 print(f"    📀 {db_file.name} ({size_kb}KB, {mtime.split()[3][:5]})")
             if len(db_files) > 5:
-                print(f"    ... 还有 {len(db_files) - 5} 个")
+                print(f"    ... and {len(db_files) - 5} more")
 
     # 检查 RSS 数据库
     rss_dir = output_dir / "rss"
     if rss_dir.exists():
         db_files = sorted(rss_dir.glob("*.db"), key=lambda x: x.name, reverse=True)
         if db_files:
-            print(f"  📰 RSS 数据库 (rss/): {len(db_files)} 个")
+            print(f"  📰 RSS databases (rss/): {len(db_files)}")
             for db_file in db_files[:5]:
                 mtime = time.ctime(db_file.stat().st_mtime)
                 size_kb = db_file.stat().st_size // 1024
                 print(f"    📀 {db_file.name} ({size_kb}KB, {mtime.split()[3][:5]})")
             if len(db_files) > 5:
-                print(f"    ... 还有 {len(db_files) - 5} 个")
+                print(f"    ... and {len(db_files) - 5} more")
 
     # 检查 TXT 快照目录
     txt_dir = output_dir / "txt"
     if txt_dir.exists():
         date_dirs = sorted([d for d in txt_dir.iterdir() if d.is_dir()], reverse=True)
         if date_dirs:
-            print(f"  📄 TXT 快照 (txt/): {len(date_dirs)} 天")
+            print(f"  📄 TXT snapshots (txt/): {len(date_dirs)} days")
             for date_dir in date_dirs[:3]:
                 txt_files = list(date_dir.glob("*.txt"))
                 if txt_files:
                     recent = sorted(txt_files, key=lambda x: x.stat().st_mtime, reverse=True)[0]
                     mtime = time.ctime(recent.stat().st_mtime)
-                    print(f"    📅 {date_dir.name}: {len(txt_files)} 个文件 (最新: {mtime.split()[3][:5]})")
+                    print(f"    📅 {date_dir.name}: {len(txt_files)} files (latest: {mtime.split()[3][:5]})")
 
     # 检查 HTML 报告目录
     html_dir = output_dir / "html"
     if html_dir.exists():
         date_dirs = sorted([d for d in html_dir.iterdir() if d.is_dir()], reverse=True)
         if date_dirs:
-            print(f"  🌐 HTML 报告 (html/): {len(date_dirs)} 天")
+            print(f"  🌐 HTML reports (html/): {len(date_dirs)} days")
             for date_dir in date_dirs[:3]:
                 html_files = list(date_dir.glob("*.html"))
                 if html_files:
                     recent = sorted(html_files, key=lambda x: x.stat().st_mtime, reverse=True)[0]
                     mtime = time.ctime(recent.stat().st_mtime)
-                    print(f"    📅 {date_dir.name}: {len(html_files)} 个文件 (最新: {mtime.split()[3][:5]})")
+                    print(f"    📅 {date_dir.name}: {len(html_files)} files (latest: {mtime.split()[3][:5]})")
 
 
 def show_logs():
     """显示实时日志"""
-    print("📋 实时日志 (按 Ctrl+C 退出):")
-    print("💡 提示: 这将显示 PID 1 进程的输出")
+    print("📋 Live logs (press Ctrl+C to exit):")
+    print("💡 Tip: This displays output from the PID 1 process")
     try:
         # 尝试多种方法查看日志
         log_files = [
@@ -400,41 +400,41 @@ def show_logs():
         
         for log_file in log_files:
             if Path(log_file).exists():
-                print(f"📄 尝试读取: {log_file}")
+                print(f"📄 Trying to read: {log_file}")
                 subprocess.run(["tail", "-f", log_file], check=True)
                 break
         else:
-            print("📋 无法找到标准日志文件，建议使用: docker logs trendradar")
+            print("📋 Standard log files not found; use: docker logs trendradar")
             
     except KeyboardInterrupt:
-        print("\n👋 退出日志查看")
+        print("\n👋 Stopped following logs")
     except Exception as e:
-        print(f"❌ 查看日志失败: {e}")
-        print("💡 建议使用: docker logs trendradar")
+        print(f"❌ Could not read logs: {e}")
+        print("💡 Use: docker logs trendradar")
 
 
 def restart_supercronic():
     """重启supercronic进程"""
-    print("🔄 重启supercronic...")
-    print("⚠️ 注意: supercronic 是 PID 1，无法直接重启")
+    print("🔄 Restarting supercronic...")
+    print("⚠️ Note: supercronic is PID 1 and cannot be restarted directly")
 
     # 检查当前 PID 1
     try:
         with open('/proc/1/cmdline', 'rb') as f:
             pid1_cmdline = f.read().replace(b'\x00', b' ').decode('utf-8', errors='ignore').strip()
-        print(f"  🔍 当前 PID 1: {pid1_cmdline}")
+        print(f"  🔍 Current PID 1: {pid1_cmdline}")
 
         if "supercronic" in pid1_cmdline.lower():
-            print("  ✅ PID 1 是 supercronic")
-            print("  💡 要重启 supercronic，需要重启整个容器:")
+            print("  ✅ PID 1 is supercronic")
+            print("  💡 To restart supercronic, restart the entire container:")
             print("    docker restart trendradar")
         else:
-            print("  ❌ PID 1 不是 supercronic，这是异常状态")
-            print("  💡 建议重启容器以修复问题:")
+            print("  ❌ PID 1 is not supercronic; this is unexpected")
+            print("  💡 Restart the container to resolve this:")
             print("    docker restart trendradar")
     except Exception as e:
-        print(f"  ❌ 无法检查 PID 1: {e}")
-        print("  💡 建议重启容器: docker restart trendradar")
+        print(f"  ❌ Could not inspect PID 1: {e}")
+        print("  💡 Restart the container: docker restart trendradar")
 
 
 def _read_proc_cmdline(pid: int) -> str:
@@ -468,7 +468,7 @@ def _terminate_webserver_process(pid: int, require_expected: bool = True) -> boo
         return True
 
     if require_expected and not _is_expected_webserver_process(pid):
-        print(f"  ⚠️ PID {pid} 存在但并非 Web 服务器进程，跳过终止")
+        print(f"  ⚠️ PID {pid} exists but is not the web server; leaving it running")
         return False
 
     try:
@@ -477,9 +477,9 @@ def _terminate_webserver_process(pid: int, require_expected: bool = True) -> boo
         try:
             os.kill(pid, 0)
             os.kill(pid, signal.SIGKILL)
-            print(f"  ⚠️ 强制停止 Web 服务器 (PID: {pid})")
+            print(f"  ⚠️ Force-stopped web server (PID: {pid})")
         except OSError:
-            print(f"  ✅ Web 服务器已停止 (PID: {pid})")
+            print(f"  ✅ Web server stopped (PID: {pid})")
         return True
     except OSError:
         return True
@@ -522,7 +522,7 @@ def _cleanup_stale_pid():
         with open(WEBSERVER_PID_FILE, 'r') as f:
             old_pid = int(f.read().strip())
         os.remove(WEBSERVER_PID_FILE)
-        print(f"  🧹 清理失效 PID 文件 (PID: {old_pid})")
+        print(f"  🧹 Removed stale PID file (PID: {old_pid})")
         return True
     except Exception:
         return False
@@ -530,8 +530,8 @@ def _cleanup_stale_pid():
 
 def start_webserver():
     """启动 Web 服务器托管 output 目录"""
-    print(f"🌐 启动 Web 服务器 (端口: {WEBSERVER_PORT})...")
-    print(f"  🔒 安全提示：仅提供静态文件访问，限制在 {WEBSERVER_DIR} 目录")
+    print(f"🌐 Starting web server (port: {WEBSERVER_PORT})...")
+    print(f"  🔒 Static files only; access is limited to {WEBSERVER_DIR}")
 
     # 检查是否已经运行
     if Path(WEBSERVER_PID_FILE).exists():
@@ -541,23 +541,23 @@ def start_webserver():
 
             # 使用增强的进程检查
             if _is_webserver_running(old_pid):
-                print(f"  ⚠️ Web 服务器已在运行 (PID: {old_pid})")
-                print(f"  💡 访问: http://localhost:{WEBSERVER_PORT}")
-                print("  💡 停止服务: python manage.py stop_webserver")
+                print(f"  ⚠️ Web server is already running (PID: {old_pid})")
+                print(f"  💡 Open: http://localhost:{WEBSERVER_PORT}")
+                print("  💡 Stop the server: python manage.py stop_webserver")
                 return
 
             # 进程异常时优先尝试终止旧进程，避免端口占用导致重启失败
             _terminate_webserver_process(old_pid, require_expected=True)
             _cleanup_stale_pid()
-            print(f"  ℹ️ 检测到失效的 PID 文件，已清理")
+            print(f"  ℹ️ Removed a stale PID file")
 
         except Exception as e:
-            print(f"  ⚠️ 清理旧的 PID 文件: {e}")
+            print(f"  ⚠️ Cleaning up the old PID file: {e}")
             _cleanup_stale_pid()
 
     # 检查目录是否存在
     if not Path(WEBSERVER_DIR).exists():
-        print(f"  ❌ 目录不存在: {WEBSERVER_DIR}")
+        print(f"  ❌ Directory does not exist: {WEBSERVER_DIR}")
         return
 
     try:
@@ -580,23 +580,23 @@ def start_webserver():
             # 保存 PID
             with open(WEBSERVER_PID_FILE, 'w') as f:
                 f.write(str(process.pid))
-            print(f"  ✅ Web 服务器已启动 (PID: {process.pid})")
-            print(f"  📁 服务目录: {WEBSERVER_DIR} (只读，仅静态文件)")
-            print(f"  🌐 访问地址: http://localhost:{WEBSERVER_PORT}")
-            print(f"  📄 首页: http://localhost:{WEBSERVER_PORT}/index.html")
-            print("  💡 停止服务: python manage.py stop_webserver")
+            print(f"  ✅ Web server started (PID: {process.pid})")
+            print(f"  📁 Serving: {WEBSERVER_DIR} (read-only static files)")
+            print(f"  🌐 URL: http://localhost:{WEBSERVER_PORT}")
+            print(f"  📄 Home page: http://localhost:{WEBSERVER_PORT}/index.html")
+            print("  💡 Stop the server: python manage.py stop_webserver")
         else:
-            print(f"  ❌ Web 服务器启动失败")
+            print(f"  ❌ Web server failed to start")
     except Exception as e:
-        print(f"  ❌ 启动失败: {e}")
+        print(f"  ❌ Startup failed: {e}")
 
 
 def stop_webserver():
     """停止 Web 服务器"""
-    print("🛑 停止 Web 服务器...")
+    print("🛑 Stopping the web server...")
 
     if not Path(WEBSERVER_PID_FILE).exists():
-        print("  ℹ️ Web 服务器未运行")
+        print("  ℹ️ Web server is not running")
         return
 
     try:
@@ -606,7 +606,7 @@ def stop_webserver():
         if Path(WEBSERVER_PID_FILE).exists():
             os.remove(WEBSERVER_PID_FILE)
     except Exception as e:
-        print(f"  ❌ 停止失败: {e}")
+        print(f"  ❌ Could not stop the server: {e}")
         # 尝试清理 PID 文件
         try:
             os.remove(WEBSERVER_PID_FILE)
@@ -616,11 +616,11 @@ def stop_webserver():
 
 def webserver_status():
     """查看 Web 服务器状态"""
-    print("🌐 Web 服务器状态:")
+    print("🌐 Web server status:")
 
     if not Path(WEBSERVER_PID_FILE).exists():
-        print("  ⭕ 未运行")
-        print(f"  💡 启动服务: python manage.py start_webserver")
+        print("  ⭕ Not running")
+        print(f"  💡 Start the server: python manage.py start_webserver")
         return
 
     try:
@@ -629,72 +629,72 @@ def webserver_status():
 
         # 使用增强的进程检查
         if _is_webserver_running(pid):
-            print(f"  ✅ 运行中 (PID: {pid})")
-            print(f"  📁 服务目录: {WEBSERVER_DIR}")
-            print(f"  🌐 访问地址: http://localhost:{WEBSERVER_PORT}")
-            print(f"  📄 首页: http://localhost:{WEBSERVER_PORT}/index.html")
-            print("  💡 停止服务: python manage.py stop_webserver")
+            print(f"  ✅ Running (PID: {pid})")
+            print(f"  📁 Serving: {WEBSERVER_DIR}")
+            print(f"  🌐 URL: http://localhost:{WEBSERVER_PORT}")
+            print(f"  📄 Home page: http://localhost:{WEBSERVER_PORT}/index.html")
+            print("  💡 Stop the server: python manage.py stop_webserver")
         else:
-            print(f"  ⭕ 未运行 (PID 文件存在但进程不可用)")
+            print(f"  ⭕ Not running (PID file exists but process is unavailable)")
             _cleanup_stale_pid()
-            print("  💡 启动服务: python manage.py start_webserver")
+            print("  💡 Start the server: python manage.py start_webserver")
     except Exception as e:
-        print(f"  ❌ 状态检查失败: {e}")
+        print(f"  ❌ Status check failed: {e}")
 
 
 def show_help():
     """显示帮助信息"""
     help_text = """
-🐳 TrendRadar 容器管理工具
+🐳 TrendRadar Container Manager
 
-📋 命令列表:
-  run              - 手动执行一次爬虫
-  status           - 显示容器运行状态
-  config           - 显示当前配置
-  files            - 显示输出文件
-  logs             - 实时查看日志
-  restart          - 重启说明
-  start_webserver  - 启动 Web 服务器托管 output 目录
-  stop_webserver   - 停止 Web 服务器
-  webserver_status - 查看 Web 服务器状态
-  help             - 显示此帮助
+📋 Commands:
+  run              - Run the crawler once
+  status           - Show container status
+  config           - Show the current configuration
+  files            - List output files
+  logs             - Follow live logs
+  restart          - Show restart instructions
+  start_webserver  - Serve the output directory over HTTP
+  stop_webserver   - Stop the web server
+  webserver_status - Show web server status
+  help             - Show this help
 
-📖 使用示例:
-  # 在容器中执行
+📖 Examples:
+  # Inside the container
   python manage.py run
   python manage.py status
   python manage.py logs
   python manage.py start_webserver
 
-  # 在宿主机执行
+  # On the host
   docker exec -it trendradar python manage.py run
   docker exec -it trendradar python manage.py status
   docker exec -it trendradar python manage.py start_webserver
   docker logs trendradar
 
-💡 常用操作指南:
-  1. 检查运行状态: status
-     - 查看 supercronic 是否为 PID 1
-     - 检查配置文件和关键文件
-     - 查看 cron 调度设置
+💡 Common tasks:
+  1. Check runtime status: status
+     - Verify that supercronic is PID 1
+     - Check the configuration and required files
+     - Inspect the cron schedule
 
-  2. 手动执行测试: run
-     - 立即执行一次新闻爬取
-     - 测试程序是否正常工作
+  2. Run a manual test: run
+     - Fetch news immediately
+     - Check that the application runs correctly
 
-  3. 查看日志: logs
-     - 实时监控运行情况
-     - 也可使用: docker logs trendradar
+  3. View logs: logs
+     - Follow current activity
+     - Alternatively: docker logs trendradar
 
-  4. 重启服务: restart
-     - 由于 supercronic 是 PID 1，需要重启整个容器
-     - 使用: docker restart trendradar
+  4. Restart: restart
+     - supercronic is PID 1, so restart the entire container
+     - Run: docker restart trendradar
 
-  5. Web 服务器管理:
-     - 启动: start_webserver
-     - 停止: stop_webserver
-     - 状态: webserver_status
-     - 访问: http://localhost:8080
+  5. Manage the web server:
+     - Start: start_webserver
+     - Stop: stop_webserver
+     - Status: webserver_status
+     - Open: http://localhost:8080
 """
     print(help_text)
 
@@ -722,12 +722,12 @@ def main():
         try:
             commands[command]()
         except KeyboardInterrupt:
-            print("\n👋 操作已取消")
+            print("\n👋 Operation cancelled")
         except Exception as e:
-            print(f"❌ 执行出错: {e}")
+            print(f"❌ Execution error: {e}")
     else:
-        print(f"❌ 未知命令: {command}")
-        print("运行 'python manage.py help' 查看可用命令")
+        print(f"❌ Unknown command: {command}")
+        print("Run 'python manage.py help' to see available commands")
 
 
 if __name__ == "__main__":

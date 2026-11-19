@@ -1,896 +1,895 @@
 <div align="center">
 
-**中文** | **[English](README-MCP-FAQ-EN.md)**
+**English** | **[中文](README-MCP-FAQ-ZH.md)**
 
 </div>
 
-# TrendRadar MCP 工具使用问答
+# TrendRadar MCP Tool Usage Q&A
 
-> AI 提问指南 - 如何通过自然对话使用新闻热点分析工具（v3.1.7）
-
----
-
-## 📋 工具一览
-
-| 分类 | 工具名称 | 功能简介 |
-|:----:|---------|---------|
-| **日期** | `resolve_date_range` | 解析"本周"、"最近7天"等自然语言为标准日期 |
-| **查询** | `get_latest_news` | 获取最新一批爬取的热榜新闻 |
-| | `get_news_by_date` | 按日期范围查询历史新闻 |
-| | `get_trending_topics` | 获取热点话题统计（支持自动提取） |
-| **RSS** | `get_latest_rss` | 获取最新 RSS 订阅内容 |
-| | `search_rss` | 在 RSS 数据中搜索关键词 |
-| | `get_rss_feeds_status` | 查看 RSS 源配置和数据状态 |
-| **搜索** | `search_news` | 统一搜索（关键词/模糊/实体，可含RSS） |
-| | `find_related_news` | 查找与指定标题相似的新闻 |
-| **分析** | `analyze_topic_trend` | 话题趋势分析（热度/生命周期/爆火/预测） |
-| | `analyze_data_insights` | 数据洞察（平台对比/活跃度/关键词共现） |
-| | `analyze_sentiment` | 新闻情感倾向分析 |
-| | `aggregate_news` | 跨平台新闻聚合去重 |
-| | `compare_periods` | 时期对比分析（周环比/月环比） |
-| | `generate_summary_report` | 生成每日/每周摘要报告 |
-| **系统** | `get_current_config` | 获取当前系统配置 |
-| | `get_system_status` | 获取系统运行状态 |
-| | `check_version` | 检查版本更新（TrendRadar + MCP Server） |
-| | `trigger_crawl` | 手动触发一次爬取任务 |
-| **存储** | `sync_from_remote` | 从远程存储拉取数据到本地 |
-| | `get_storage_status` | 获取存储配置和状态 |
-| | `list_available_dates` | 列出本地/远程可用的日期 |
-| **文章** | `read_article` | 读取单篇文章内容（Markdown 格式） |
-| | `read_articles_batch` | 批量读取多篇文章（最多 5 篇） |
-| **通知** | `get_notification_channels` | 获取所有已配置的通知渠道及其状态 |
-| | `send_notification` | 向已配置的通知渠道发送消息（自动格式转换） |
+> AI Query Guide - How to Use News Trend Analysis Tools Through Natural Conversation (v3.1.7)
 
 ---
 
-## ⚙️ 默认设置说明（重要！）
+## 📋 Tools Overview
 
-默认采用以下优化策略，主要是为了节约 AI token 消耗：
+| Category | Tool Name | Description |
+|:--------:|-----------|-------------|
+| **Date** | `resolve_date_range` | Parse "this week", "last 7 days" to standard dates |
+| **Query** | `get_latest_news` | Get the latest batch of trending news |
+| | `get_news_by_date` | Query historical news by date range |
+| | `get_trending_topics` | Get trending topics statistics (auto-extract supported) |
+| **RSS** | `get_latest_rss` | Get latest RSS subscription content |
+| | `search_rss` | Search keywords in RSS data |
+| | `get_rss_feeds_status` | View RSS feed config and data status |
+| **Search** | `search_news` | Unified search (keyword/fuzzy/entity, RSS optional) |
+| | `find_related_news` | Find news similar to a given title |
+| **Analysis** | `analyze_topic_trend` | Topic trend analysis (hotness/lifecycle/viral/predict) |
+| | `analyze_data_insights` | Data insights (platform compare/activity/co-occurrence) |
+| | `analyze_sentiment` | News sentiment analysis |
+| | `aggregate_news` | Cross-platform news aggregation & dedup |
+| | `compare_periods` | Period comparison (week-over-week/month-over-month) |
+| | `generate_summary_report` | Generate daily/weekly summary reports |
+| **System** | `get_current_config` | Get current system configuration |
+| | `get_system_status` | Get system running status |
+| | `check_version` | Check version updates (TrendRadar + MCP Server) |
+| | `trigger_crawl` | Manually trigger a crawl task |
+| **Storage** | `sync_from_remote` | Pull data from remote storage to local |
+| | `get_storage_status` | Get storage config and status |
+| | `list_available_dates` | List available dates (local/remote) |
+| **Article** | `read_article` | Read single article content (Markdown format) |
+| | `read_articles_batch` | Batch read multiple articles (max 5) |
+| **Notification** | `get_notification_channels` | Get all configured notification channels and their status |
+| | `send_notification` | Send messages to configured notification channels (auto format conversion) |
 
-| 默认设置       | 说明                                    | 如何调整                              |
+---
+
+## ⚙️ Default Settings Explanation (Important!)
+
+The following optimization strategies are adopted by default, mainly to save AI token consumption:
+
+| Default Setting | Description | How to Adjust |
 | -------------- | --------------------------------------- | ------------------------------------- |
-| **限制条数**   | 默认返回 50 条新闻                      | 对话中说"返回前 10 条"或"给我 100 条" |
-| **时间范围**   | 默认查询今天的数据                      | 说"查询昨天"、"最近一周"或"1月1日到7日" |
-| **URL 链接**   | 默认不返回链接（节省约 160 tokens/条）  | 说"需要链接"或"包含 URL"              |
-| **关键词列表** | 默认不使用 frequency_words.txt 过滤新闻 | 只有调用"趋势话题"工具时才使用        |
+| **Result Limit** | Default returns 50 news items | Say "return top 10" or "give me 100 items" in conversation |
+| **Time Range** | Default queries today's data | Say "query yesterday", "last week" or "Jan 1 to 7" |
+| **URL Links** | Default no links (saves ~160 tokens/item) | Say "need links" or "include URLs" |
+| **Keyword List** | Default does not use frequency_words.txt to filter news | Only used when calling "trending topics" tool |
 
-**⚠️ 重要：** AI 模型的选择直接影响工具调用效果，AI 越智能，调用越准确。当你解除上面的限制，比如从今天的查询，放宽到一周的查询，首先你要在本地有一周的数据，其次，token 消耗量可能会倍增。
+**⚠️ Important:** The choice of AI model directly affects the tool call effectiveness. The smarter the AI, the more accurate the calls. When you remove the above restrictions, for example, from querying today to querying a week, first you need to have a week's data locally, and secondly, token consumption may multiply.
 
-**💡 提示：** 本项目提供了专门的日期解析工具，可以准确解析"最近7天"、"本周"等自然语言日期表达式，确保所有 AI 模型获得一致的日期范围。详见下方 Q18。
+**💡 Tip:** This project provides a dedicated date parsing tool that can accurately parse natural language date expressions like "last 7 days", "this week", ensuring all AI models get consistent date ranges. See Q18 below for details.
 
 
-## 💰 AI 模型
+## 💰 AI Models
 
-下面我以 **[硅基流动](https://cloud.siliconflow.cn)** 平台作为例子，里面有很多大模型可选择。在开发和测试本项目的过程中，我使用本平台进行了许多的功能测试和验证。
+Below I use the **[SiliconFlow](https://cloud.siliconflow.cn)** platform as an example, which has many large models to choose from. During the development and testing of this project, I used this platform for many functional tests and validations.
 
-### 📊 注册方式对比
+### 📊 Registration Method Comparison
 
-| 注册方式 | 无邀请链接直接注册 | 含有邀请链接注册  |
+| Registration Method | Direct Registration Without Referral | Registration With Referral Link |
 |:-------:|:-------:|:-----------------:|
-| 注册链接 | [siliconflow.cn](https://cloud.siliconflow.cn) | [邀请链接](https://cloud.siliconflow.cn/i/fqnyVaIU) |
-| 免费额度 | 0 tokens | **2000万 tokens** (≈14元) |
-| 额外福利 | ❌ | ✅ 邀请者也获得2000万tokens |
+| Registration Link | [siliconflow.cn](https://cloud.siliconflow.cn) | [Referral Link](https://cloud.siliconflow.cn/i/fqnyVaIU) |
+| Free Quota | 0 tokens | **20 million tokens** (≈$2) |
+| Extra Benefits | ❌ | ✅ Referrer also gets 20 million tokens |
 
-> 💡 **提示**：上面的赠送额度，应该可以询问 **200次以上**
+> 💡 **Tip**: The above gift quota should allow for **200+ queries**
 
 
-### 🚀 快速开始
+### 🚀 Quick Start
 
-#### 1️⃣ 注册并获取 API 密钥
+#### 1️⃣ Register and Get API Key
 
-1. 使用上方链接完成注册
-2. 访问 [API 密钥管理页面](https://cloud.siliconflow.cn/me/account/ak)
-3. 点击「新建 API 密钥」
-4. 复制生成的密钥（请妥善保管）
+1. Complete registration using the link above
+2. Visit [API Key Management Page](https://cloud.siliconflow.cn/me/account/ak)
+3. Click "Create New API Key"
+4. Copy the generated key (please keep it safe)
 
-#### 2️⃣ 在 Cherry Studio 中配置
+#### 2️⃣ Configure in Cherry Studio
 
-1. 打开 **Cherry Studio**
-2. 进入「模型服务」设置
-3. 找到「硅基流动」
-4. 将复制的密钥粘贴到 **[API密钥]** 输入框
-5. 确保右上角勾选框打开后显示为 **绿色** ✅
-
----
-
-### ✨ 配置完成！
-
-现在你可以开始使用本项目，享受稳定快速的 AI 服务了！
-
-在你测试一次询问后，请立刻去 [硅基流动账单](https://cloud.siliconflow.cn/me/bills) 查询这一次的消耗量，心底有个估算。
-
+1. Open **Cherry Studio**
+2. Go to "Model Service" settings
+3. Find "SiliconFlow"
+4. Paste the copied key into the **[API Key]** input box
+5. Ensure the checkbox in the top right corner shows **green** when enabled ✅
 
 ---
 
-## 基础查询
+### ✨ Configuration Complete!
 
-### Q1: 如何查看最新的新闻？
+Now you can start using this project and enjoy stable and fast AI services!
 
-**你可以这样问：**
+After testing one query, please immediately check the [SiliconFlow Billing](https://cloud.siliconflow.cn/me/bills) to see the consumption and have an estimate in mind.
 
-- "给我看看最新的新闻"
-- "查询今天的热点新闻"
-- "获取知乎和微博的最新 10 条新闻"
-- "查看最新新闻，需要包含链接"
-
-**工具返回行为：**
-
-- 工具会返回所有平台的最新 50 条新闻
-- 默认不包含 URL 链接（节省 token）
-
-**AI 展示行为（重要）：**
-
-- ⚠️ **AI 通常会自动总结**，只展示部分新闻（如 TOP 10-20 条）
-- ✅ 如果你想看全部 50 条，需要明确要求："展示所有新闻"或"完整列出所有 50 条"
-- 💡 这是 AI 模型的自然行为，不是工具的限制
-
-**可以调整：**
-
-- 指定平台：如"只看知乎的"
-- 调整数量：如"返回前 20 条"
-- 包含链接：如"需要链接"
-- **要求完整展示**：如"展示全部，不要总结"
 
 ---
 
-### Q2: 如何查询特定日期的新闻？
+## Basic Queries
 
-**你可以这样问：**
+### Q1: How to view the latest news?
 
-- "查询昨天的新闻"
-- "看看 3 天前知乎的新闻"
-- "2025-10-10 的新闻有哪些"
-- "上周一的新闻"
-- "给我看看最新新闻"（自动查询今天）
+**You can ask like this:**
 
-**支持的日期格式：**
+- "Show me the latest news"
+- "Query today's trending news"
+- "Get the latest 10 news from Zhihu and Weibo"
+- "View latest news, need links included"
 
-- 相对日期：今天、昨天、前天、3 天前
-- 星期：上周一、本周三、last monday
-- 绝对日期：2025-10-10、10 月 10 日
+**Tool return behavior:**
 
-**工具返回行为：**
+- Tool returns the latest 50 news items from all platforms
+- Does not include URL links by default (saves tokens)
 
-- 不指定日期时自动查询今天（节省 token）
-- 工具会返回所有平台的 50 条新闻
-- 默认不包含 URL 链接
+**AI display behavior (Important):**
 
-**AI 展示行为（重要）：**
+- ⚠️ **AI usually auto-summarizes**, only showing partial news (like TOP 10-20 items)
+- ✅ If you want to see all 50 items, need to explicitly request: "show all news" or "list all 50 items completely"
+- 💡 This is the AI model's natural behavior, not a tool limitation
 
-- ⚠️ **AI 通常会自动总结**，只展示部分新闻（如 TOP 10-20 条）
-- ✅ 如果你想看全部，需要明确要求："展示所有新闻，不要总结"
+**Can be adjusted:**
+
+- Specify platform: like "only Zhihu"
+- Adjust quantity: like "return top 20"
+- Include links: like "need links"
+- **Request full display**: like "show all, don't summarize"
 
 ---
 
-### Q3: 如何查看热点话题统计？
+### Q2: How to query news from a specific date?
 
-**你可以这样问：**
+**You can ask like this:**
 
-- "我关注的词今天出现了多少次"（使用预设关注词）
-- "自动分析今天新闻里有哪些热门话题"（自动提取）
-- "看看新闻里最热门的词是什么"（自动提取）
+- "Query yesterday's news"
+- "Check Zhihu news from 3 days ago"
+- "What news was there on 2025-10-10"
+- "News from last Monday"
+- "Show me the latest news" (automatically queries today)
 
-**两种提取模式：**
+**Supported date formats:**
 
-| 模式 | 说明 | 示例问法 |
+- Relative dates: today, yesterday, day before yesterday, 3 days ago
+- Days of week: last Monday, this Wednesday
+- Absolute dates: 2025-10-10, October 10
+
+**Tool return behavior:**
+
+- Automatically queries today when date not specified (saves tokens)
+- Tool returns 50 news items from all platforms
+- Does not include URL links by default
+
+**AI display behavior (Important):**
+
+- ⚠️ **AI usually auto-summarizes**, only showing partial news (like TOP 10-20 items)
+- ✅ If you want to see all, need to explicitly request: "show all news, don't summarize"
+
+---
+
+### Q3: How to view trending topic statistics?
+
+**You can ask like this:**
+
+- "How many times did my followed words appear today" (using preset keywords)
+- "Automatically analyze what hot topics are in today's news" (auto extract)
+- "See what are the hottest words in the news" (auto extract)
+
+**Two extraction modes:**
+
+| Mode | Description | Example Question |
 |------|------|---------|
-| **预设关注词** | 统计你预先设定的关注词（基于配置文件，默认） | "我的关注词出现了多少次" |
-| **自动提取** | 自动从新闻标题提取高频词（无需预设） | "自动分析热门话题" |
+| **Preset keywords** | Count preset followed words (based on config file, default) | "How many times did my followed words appear" |
+| **Auto extract** | Auto-extract high-frequency words from news titles (no preset needed) | "Auto-analyze hot topics" |
 
 ---
 
-## RSS 订阅查询
+## RSS Feed Queries
 
-### Q4.1: 如何查看最新的 RSS 订阅内容？
+### Q4.1: How to view latest RSS feed content?
 
-**你可以这样问：**
+**You can ask like this:**
 
-- "查看最新的 RSS 订阅内容"
-- "获取 Hacker News 的最新文章"
-- "查看所有 RSS 源的最新 20 条"
-- "获取 RSS 订阅，需要包含摘要"
-- "看看最近一周的 RSS 内容"（支持多日查询）
-- "获取 Hacker News 最近 7 天的文章"
+- "Show me the latest RSS feed content"
+- "Get the latest articles from Hacker News"
+- "View latest 20 items from all RSS feeds"
+- "Get RSS feeds, need to include summaries"
+- "Show me RSS content from the last week" (multi-day query support)
+- "Get Hacker News articles from last 7 days"
 
-**工具返回行为：**
+**Tool return behavior:**
 
-- 默认返回今天的 RSS 条目（最多 50 条）
-- 支持 `days` 参数获取多日数据（1-30天）
-- 默认不包含摘要（节省 token）
-- 按发布时间倒序排列
-- 跨日期自动去重（按 URL）
+- Returns today's RSS items by default (up to 50)
+- Supports `days` parameter for multi-day queries (1-30 days)
+- Does not include summaries by default (saves tokens)
+- Sorted by publication time in descending order
+- Auto-deduplication across dates (by URL)
 
-**AI 展示行为（重要）：**
+**AI display behavior (Important):**
 
-- ⚠️ **AI 通常会自动总结**，只展示部分条目
-- ✅ 如果你想看全部，需要明确要求："展示所有 RSS 内容"
+- ⚠️ **AI usually auto-summarizes**, only showing partial items
+- ✅ If you want to see all, need to explicitly request: "show all RSS content"
 
-**可以调整：**
+**Can be adjusted:**
 
-- 指定 RSS 源：如"只看 Hacker News"
-- 指定天数：如"最近 7 天"、"最近一周"
-- 调整数量：如"返回前 20 条"
-- 包含摘要：如"需要摘要"
-
----
-
-### Q4.2: 如何搜索 RSS 订阅中的内容？
-
-**你可以这样问：**
-
-- "在 RSS 中搜索'AI'相关的文章"
-- "搜索最近 7 天 RSS 中关于'机器学习'的内容"
-- "在 Hacker News 中搜索'Python'"
-
-**工具返回行为：**
-
-- 使用关键词搜索 RSS 条目的标题
-- 默认搜索最近 7 天的数据
-- 工具会返回最多 50 条结果
-
-**可以调整：**
-
-- 指定 RSS 源：如"只搜索 Hacker News"
-- 调整天数：如"搜索最近 14 天"
-- 包含摘要：如"需要摘要"
+- Specify RSS feed: like "only Hacker News"
+- Specify days: like "last 7 days", "past week"
+- Adjust quantity: like "return top 20"
+- Include summary: like "need summaries"
 
 ---
 
-### Q4.3: 如何查看 RSS 源的状态？
+### Q4.2: How to search content in RSS feeds?
 
-**你可以这样问：**
+**You can ask like this:**
 
-- "查看 RSS 源状态"
-- "RSS 抓取了多少数据"
-- "哪些 RSS 源有数据"
+- "Search for 'AI' related articles in RSS"
+- "Search RSS content about 'machine learning' from last 7 days"
+- "Search 'Python' in Hacker News"
 
-**返回信息：**
+**Tool return behavior:**
 
-| 字段 | 说明 |
-|------|------|
-| **可用日期** | 有 RSS 数据的日期列表 |
-| **总日期数** | 总共有多少天的数据 |
-| **今日各源统计** | 今日各 RSS 源的数据统计 |
-| **生成时间** | 状态生成时间 |
+- Searches RSS item titles using keywords
+- Default searches last 7 days of data
+- Tool returns up to 50 results
 
----
+**Can be adjusted:**
 
-## 搜索检索
-
-### Q4: 如何搜索包含特定关键词的新闻？
-
-**你可以这样问：**
-
-- "搜索包含'人工智能'的新闻"
-- "查找关于'特斯拉降价'的报道"
-- "搜索马斯克相关的新闻，返回前 20 条"
-- "查找最近7天关于'iPhone 16'的新闻"
-- "查找2025年1月1日到7日'特斯拉'的相关新闻"
-- "查找'iPhone 16 发布'这条新闻的链接"
-
-**工具返回行为：**
-
-- 使用关键词模式搜索
-- 默认搜索今天的数据
-- AI会自动将"最近7天"、"上周"等相对时间转换为具体日期范围
-- 工具会返回最多 50 条结果
-- 默认不包含 URL 链接
-
-**AI 展示行为（重要）：**
-
-- ⚠️ **AI 通常会自动总结**，只展示部分搜索结果
-- ✅ 如果你想看全部，需要明确要求："展示所有搜索结果"
-
-**可以调整：**
-
-- 指定时间范围：
-  - 相对方式："搜索最近一周的"（AI 自动计算日期）
-  - 绝对日期："搜索2025年1月1日到7日的"
-- 指定平台：如"只搜索知乎"
-- 调整排序：如"按权重排序"
-- 包含链接：如"需要链接"
+- Specify RSS feed: like "only search Hacker News"
+- Adjust days: like "search last 14 days"
+- Include summary: like "need summaries"
 
 ---
 
-### Q4.4: 如何同时搜索热榜和 RSS 内容？
+### Q4.3: How to view RSS feed status?
 
-**你可以这样问：**
+**You can ask like this:**
 
-- "搜索'AI'相关内容，包括 RSS"
-- "查找'人工智能'的新闻，同时搜索 RSS 订阅"
-- "搜索'特斯拉'，热榜和 RSS 都要"
+- "View RSS feed status"
+- "How much data has RSS crawled"
+- "Which RSS feeds have data"
 
-**工具返回行为：**
+**Return information:**
 
-- 热榜结果和 RSS 结果**分开展示**
-- 热榜按排名/相关度排序，RSS 按发布时间排序
-- RSS 结果不影响热榜的排名展示
-- 默认返回热榜 50 条 + RSS 20 条
-
-**可以调整：**
-
-- RSS 数量：如"RSS 返回 10 条"
-- 只搜索热榜：不说"包括 RSS"（默认行为）
-- 只搜索 RSS：说"只在 RSS 中搜索"
+| Field | Description |
+|-------|-------------|
+| **Available dates** | List of dates with RSS data |
+| **Total date count** | How many days of data total |
+| **Today's feed stats** | Today's data statistics by RSS feed |
+| **Generation time** | Status generation time |
 
 ---
 
-### Q5: 如何查找相关新闻？
+## Search and Retrieval
 
-**你可以这样问：**
+### Q4: How to search for news containing specific keywords?
 
-- "找出和'特斯拉降价'相似的新闻"（今天）
-- "查找昨天与'人工智能突破'相关的新闻"（历史）
-- "搜索上周关于'ChatGPT'的相关报道"（历史）
-- "看看最近7天有没有和这条新闻相似的报道"（历史）
+**You can ask like this:**
 
-**支持的时间范围：**
+- "Search for news containing 'artificial intelligence'"
+- "Find reports about 'Tesla price cut'"
+- "Search for news about Musk, return top 20"
+- "Find news about 'iPhone 16' in the last 7 days"
+- "Find news about 'Tesla' from January 1 to 7, 2025"
+- "Find the link to the news 'iPhone 16 release'"
 
-| 方式 | 说明 | 示例 |
-|------|------|------|
-| 不指定 | 只查询今天的数据（默认） | "找相似新闻" |
-| 预设值 | 昨天、上周、上个月 | "查找昨天的相关新闻" |
-| 日期范围 | 指定开始和结束日期 | "查找1月1日到7日的相关报道" |
+**Tool return behavior:**
 
-**工具返回行为：**
+- Uses keyword mode search
+- Default searches today's data
+- AI automatically converts relative time like "last 7 days", "last week" to specific date ranges
+- Tool returns up to 50 results
+- Does not include URL links by default
 
-- 相似度阈值 0.5（可调整）
-- 工具会返回最多 50 条结果
-- 按相似度排序
-- 默认不包含 URL 链接
+**AI display behavior (Important):**
 
-**AI 展示行为（重要）：**
+- ⚠️ **AI usually auto-summarizes**, only showing partial search results
+- ✅ If you want to see all, need to explicitly request: "show all search results"
 
-- ⚠️ **AI 通常会自动总结**，只展示部分相关新闻
-- ✅ 如果你想看全部，需要明确要求："展示所有相关新闻"
+**Can be adjusted:**
 
-**可以调整：**
-
-- 指定时间：如"查找上周的"
-- 调整阈值：如"相似度 0.3 以上的都要"
-- 包含链接：说"需要链接"
+- Specify time range:
+  - Relative way: "search last week" (AI automatically calculates dates)
+  - Absolute dates: "search from January 1 to 7, 2025"
+- Specify platform: like "only search Zhihu"
+- Adjust sorting: like "sort by weight"
+- Include links: like "need links"
 
 ---
 
-## 趋势分析
+### Q4.4: How to search both hot news and RSS content simultaneously?
 
-### Q6: 如何分析话题的热度趋势？
+**You can ask like this:**
 
-**你可以这样问：**
+- "Search for 'AI' content, including RSS"
+- "Find news about 'artificial intelligence', also search RSS subscriptions"
+- "Search for 'Tesla', both hot news and RSS"
 
-- "分析'人工智能'最近一周的热度趋势"
-- "看看'特斯拉'话题是昙花一现还是持续热点"
-- "检测今天有哪些突然爆火的话题"
-- "预测接下来可能的热点话题"
-- "分析'比特币'在2024年12月的生命周期"
+**Tool return behavior:**
 
-**四种分析模式：**
+- Hot news results and RSS results are **displayed separately**
+- Hot news sorted by rank/relevance, RSS sorted by publish time
+- RSS results do not affect hot news ranking display
+- Default returns 50 hot news + 20 RSS items
 
-| 模式 | 说明 | 示例问法 |
+**Can be adjusted:**
+
+- RSS count: like "return 10 RSS items"
+- Only search hot news: don't say "including RSS" (default behavior)
+- Only search RSS: say "only search in RSS"
+
+---
+
+### Q5: How to find related news?
+
+**You can ask like this:**
+
+- "Find news similar to 'Tesla price cut'" (today)
+- "Find news related to 'AI breakthrough' from yesterday" (history)
+- "Search for historical reports about 'Tesla' from last week" (history)
+- "See if there are reports similar to this news in the last 7 days" (history)
+
+**Supported time ranges:**
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| Not specified | Only query today's data (default) | "Find similar news" |
+| Preset values | yesterday, last week, last month | "Find related news from yesterday" |
+| Date range | Specify start and end dates | "Find related reports from Jan 1 to 7" |
+
+**Tool return behavior:**
+
+- Similarity threshold 0.5 (adjustable)
+- Tool returns up to 50 results
+- Sorted by similarity
+- Does not include URL links by default
+
+**AI display behavior (Important):**
+
+- ⚠️ **AI usually auto-summarizes**, only showing partial related news
+- ✅ If you want to see all, need to explicitly request: "show all related news"
+
+**Can be adjusted:**
+
+- Specify time: like "find from last week"
+- Adjust threshold: like "similarity above 0.3"
+- Include links: say "need links"
+
+---
+
+## Trend Analysis
+
+### Q6: How to analyze topic heat trends?
+
+**You can ask like this:**
+
+- "Analyze the heat trend of 'artificial intelligence' in the last week"
+- "See if 'Tesla' topic is a flash in the pan or sustained hot topic"
+- "Detect which topics suddenly went viral today"
+- "Predict potential hot topics coming up"
+- "Analyze the lifecycle of 'Bitcoin' in December 2024"
+
+**Four analysis modes:**
+
+| Mode | Description | Example Question |
 |------|------|---------|
-| **热度趋势** | 追踪话题热度变化 | "分析'AI'的热度趋势" |
-| **生命周期** | 从出现到消失的完整周期 | "看看'XX'是昙花一现还是持续热点" |
-| **异常检测** | 识别突然爆火的话题 | "今天有哪些突然爆火的话题" |
-| **预测** | 预测未来可能的热点 | "预测接下来可能的热点" |
+| **Heat trend** | Track topic heat changes | "Analyze 'AI' heat trend" |
+| **Lifecycle** | Complete cycle from emergence to disappearance | "See if 'XX' is a flash in the pan or sustained hot topic" |
+| **Anomaly detection** | Identify suddenly viral topics | "What topics suddenly went viral today" |
+| **Prediction** | Predict future hot topics | "Predict upcoming hot topics" |
 
-**工具返回行为：**
+**Tool return behavior:**
 
-- AI会自动将"最近一周"等相对时间转换为具体日期范围
-- 默认分析最近7天数据
-- 按天粒度统计
+- AI automatically converts relative time like "last week" to specific date ranges
+- Default analyzes last 7 days of data
+- Statistics by day granularity
 
 ---
 
-## 数据洞察
+## Data Insights
 
-### Q7: 如何对比不同平台对话题的关注度？
+### Q7: How to compare different platforms' attention to topics?
 
-**你可以这样问：**
+**You can ask like this:**
 
-- "对比各个平台对'人工智能'话题的关注度"
-- "看看哪个平台更新最频繁"
-- "分析一下哪些关键词经常一起出现"
+- "Compare different platforms' attention to 'artificial intelligence' topic"
+- "See which platform updates most frequently"
+- "Analyze which keywords often appear together"
 
-**三种洞察模式：**
+**Three insight modes:**
 
-| 模式           | 功能             | 示例问法                   |
+| Mode | Function | Example Question |
 | -------------- | ---------------- | -------------------------- |
-| **平台对比**   | 对比各平台关注度 | "对比各平台对'AI'的关注度" |
-| **活跃度统计** | 统计平台发布频率 | "看看哪个平台更新最频繁"   |
-| **关键词共现** | 分析关键词关联   | "哪些关键词经常一起出现"   |
+| **Platform Compare** | Compare platform attention | "Compare platforms' attention to 'AI'" |
+| **Activity Stats** | Count platform posting frequency | "See which platform updates most frequently" |
+| **Keyword Co-occurrence** | Analyze keyword associations | "Which keywords often appear together" |
 
-**工具返回行为：**
+**Tool return behavior:**
 
-- 默认使用平台对比模式
-- 分析今天的数据
-- 关键词共现最小频次 3 次
-
----
-
-## 情感分析
-
-### Q8: 如何分析新闻的情感倾向？
-
-**你可以这样问：**
-
-- "分析一下今天新闻的情感倾向"
-- "看看'特斯拉'相关新闻是正面还是负面的"
-- "分析各平台对'人工智能'的情感态度"
-- "看看'比特币'一周内的情感倾向，选择前 20 条最重要的"
-
-**工具返回行为：**
-
-- 默认分析今天的数据
-- 工具会返回最多 50 条新闻
-- 按权重排序（优先展示重要新闻）
-- 默认不包含 URL 链接
-
-**AI 展示行为（重要）：**
-
-- ⚠️ 本工具返回 **AI 提示词**，不是直接的情感分析结果
-- AI 会根据提示词生成情感分析报告
-- 通常会展示情感分布、关键发现和代表性新闻
-
-**可以调整：**
-
-- 指定话题：如"关于'特斯拉'"
-- 指定时间：如"最近一周"
-- 调整数量：如"返回前 20 条"
+- Default uses platform compare mode
+- Analyzes today's data
+- Keyword co-occurrence minimum frequency 3 times
 
 ---
 
-### Q9: 如何获取去重后的跨平台新闻？
+## Sentiment Analysis
 
-**你可以这样问：**
+### Q8: How to analyze news sentiment?
 
-- "帮我聚合今天的新闻，去掉重复的"
-- "看看哪些新闻在多个平台都有报道"
-- "给我看去重后的热点新闻"
-- "哪些新闻是跨平台热点"
+**You can ask like this:**
 
-**工具功能：**
+- "Analyze today's news sentiment"
+- "See if 'Tesla' related news is positive or negative"
+- "Analyze different platforms' sentiment towards 'artificial intelligence'"
+- "See the sentiment of 'Bitcoin' within a week, choose the top 20 most important"
 
-- 自动识别不同平台报道的同一事件
-- 将相似新闻合并为一条聚合新闻
-- 显示每条新闻的平台覆盖情况
-- 计算综合热度权重
+**Tool return behavior:**
 
-**返回信息：**
+- Default analyzes today's data
+- Tool returns up to 50 news items
+- Sorted by weight (prioritizing important news)
+- Does not include URL links by default
 
-| 字段 | 说明 |
-|------|------|
-| **代表性标题** | 这组新闻的代表标题 |
-| **覆盖平台** | 哪些平台报道了这条新闻 |
-| **平台数量** | 覆盖了多少个平台 |
-| **是否跨平台** | 是否为跨平台热点 |
-| **最佳排名** | 在各平台的最佳排名 |
-| **综合权重** | 综合热度评分 |
-| **各平台来源** | 各平台的详细信息 |
+**AI display behavior (Important):**
 
-**可以调整：**
+- ⚠️ This tool returns **AI prompts**, not direct sentiment analysis results
+- AI generates sentiment analysis reports based on prompts
+- Usually displays sentiment distribution, key findings, and representative news
 
-- 指定时间：如"最近一周的"
-- 调整相似度阈值：如"更严格匹配"或"宽松匹配"
-- 指定平台：如"只看知乎和微博"
+**Can be adjusted:**
+
+- Specify topic: like "about 'Tesla'"
+- Specify time: like "last week"
+- Adjust quantity: like "return top 20"
 
 ---
 
-### Q10: 如何生成每日或每周的热点摘要？
+### Q9: How to get deduplicated cross-platform news?
 
-**你可以这样问：**
+**You can ask like this:**
 
-- "生成今天的新闻摘要报告"
-- "给我一份本周的热点总结"
-- "生成过去 7 天的新闻分析报告"
+- "Help me aggregate today's news, remove duplicates"
+- "See which news is reported on multiple platforms"
+- "Show me deduplicated hotspot news"
+- "Which news are cross-platform hot topics"
 
-**报告类型：**
+**Tool functionality:**
 
-- 每日摘要：总结当天的热点新闻
-- 每周摘要：总结一周的热点趋势
+- Automatically identifies the same event reported by different platforms
+- Merges similar news into one aggregated news item
+- Shows platform coverage for each news item
+- Calculates comprehensive heat weight
 
----
+**Return information:**
 
-### Q11: 如何对比不同时期的热点变化？
+| Field | Description |
+|-------|-------------|
+| **Representative title** | Representative title of this news group |
+| **Covered platforms** | Which platforms reported this news |
+| **Platform count** | How many platforms covered |
+| **Is cross-platform** | Whether it's a cross-platform hot topic |
+| **Best rank** | Best ranking across platforms |
+| **Comprehensive weight** | Comprehensive heat score |
+| **Platform sources** | Detailed info from each platform |
 
-**你可以这样问：**
+**Can be adjusted:**
 
-- "对比本周和上周的热点变化"
-- "看看这个月和上个月有什么不同"
-- "分析'人工智能'在两个时期的热度差异"
-- "对比各平台活跃度的变化"
-
-**三种对比模式：**
-
-| 模式 | 说明 | 适用场景 |
-|------|------|---------|
-| **总体概览** | 新闻数量变化、关键词变化、TOP新闻对比 | 快速了解整体变化 |
-| **话题变化** | 上升话题、下降话题、新出现话题 | 分析热点转移 |
-| **平台活跃度** | 各平台新闻数量变化 | 了解平台动态 |
-
-**时间段预设值：**
-
-- 今天 / 昨天
-- 本周 / 上周
-- 本月 / 上月
-- 或使用自定义日期范围
+- Specify time: like "from last week"
+- Adjust similarity threshold: like "stricter matching" or "looser matching"
+- Specify platform: like "only Zhihu and Weibo"
 
 ---
 
-## 系统管理
+### Q10: How to generate daily or weekly hotspot summaries?
 
-### Q12: 如何查看系统配置？
+**You can ask like this:**
 
-**你可以这样问：**
+- "Generate today's news summary report"
+- "Give me a weekly hotspot summary"
+- "Generate news analysis report for the past 7 days"
 
-- "查看当前系统配置"
-- "显示配置文件内容"
-- "有哪些可用的平台？"
-- "当前的权重配置是什么？"
+**Report types:**
 
-**可以查询：**
-
-- 可用平台列表
-- 爬虫配置（请求间隔、超时设置）
-- 权重配置（排名权重、频次权重）
-- 通知配置（飞书、钉钉、企业微信、Telegram、Email、ntfy、Bark、Slack、通用 Webhook）
+- Daily summary: Summarizes the day's hotspot news
+- Weekly summary: Summarizes a week's hotspot trends
 
 ---
 
-### Q13: 如何检查系统运行状态？
+### Q11: How to compare hotspot changes across different periods?
 
-**你可以这样问：**
+**You can ask like this:**
 
-- "检查系统状态"
-- "系统运行正常吗？"
-- "最后一次爬取是什么时候？"
-- "有多少天的历史数据？"
+- "Compare this week and last week's hotspot changes"
+- "See what's different between this month and last month"
+- "Analyze 'artificial intelligence' heat difference in two periods"
+- "Compare platform activity changes"
 
-**返回信息：**
+**Three comparison modes:**
 
-- 系统版本和状态
-- 最后爬取时间
-- 历史数据天数
-- 健康检查结果
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| **Overview** | News count change, keyword change, TOP news comparison | Quick understanding of overall changes |
+| **Topic shift** | Rising topics, falling topics, newly appeared topics | Analyze hotspot migration |
+| **Platform activity** | News count change by platform | Understand platform dynamics |
 
----
+**Time period presets:**
 
-### Q13.1: 如何检查版本更新？
-
-**你可以这样问：**
-
-- "检查版本更新"
-- "有没有新版本？"
-- "当前版本是最新的吗？"
-
-**返回信息：**
-
-会同时检查两个组件的版本：
-
-| 组件 | 说明 |
-|------|------|
-| **TrendRadar** | 核心爬虫和分析引擎 |
-| **MCP Server** | AI 对话工具服务 |
-
-每个组件会告诉你：
-- 当前安装的版本
-- 最新可用的版本
-- 是否需要更新
-- 更新建议
-
-**可以调整：**
-
-- 如果访问 GitHub 较慢，可以说"检查版本更新，使用代理 http://127.0.0.1:10801"
+- Today / Yesterday
+- This week / Last week
+- This month / Last month
+- Or use custom date range
 
 ---
 
-### Q14: 如何手动触发爬取任务？
+## System Management
 
-**你可以这样问：**
+### Q12: How to view system configuration?
 
-- "请你爬取当前的今日头条的新闻"（临时查询）
-- "帮我抓取一下知乎和微博的最新新闻并保存"（持久化）
-- "触发一次爬取并保存数据"（持久化）
-- "获取 36 氪 的实时数据但不保存"（临时查询）
+**You can ask like this:**
 
-**两种模式：**
+- "View current system configuration"
+- "Display configuration file content"
+- "What platforms are available?"
+- "What's the current weight configuration?"
 
-| 模式           | 用途                 | 示例                 |
+**Can query:**
+
+- Available platform list
+- Crawler configuration (request interval, timeout settings)
+- Weight configuration (ranking weight, frequency weight)
+- Notification configuration (Feishu, DingTalk, WeCom, Telegram, Email, ntfy, Bark, Slack, Generic Webhook)
+
+---
+
+### Q13: How to check system running status?
+
+**You can ask like this:**
+
+- "Check system status"
+- "Is the system running normally?"
+- "When was the last crawl?"
+- "How many days of historical data?"
+
+**Return information:**
+
+- System version and status
+- Last crawl time
+- Historical data days
+- Health check results
+
+---
+
+### Q13.1: How to check for version updates?
+
+**You can ask like this:**
+
+- "Check for version updates"
+- "Is there a new version?"
+- "Is the current version up to date?"
+
+**Return information:**
+
+Will check both components' versions simultaneously:
+
+| Component | Description |
+|-----------|-------------|
+| **TrendRadar** | Core crawler and analysis engine |
+| **MCP Server** | AI conversation tool service |
+
+For each component, you'll get:
+- Currently installed version
+- Latest available version
+- Whether an update is needed
+- Update recommendation
+
+**Can be adjusted:**
+
+- If GitHub access is slow, say "check version updates, use proxy http://127.0.0.1:10801"
+
+---
+
+### Q14: How to manually trigger a crawl task?
+
+**You can ask like this:**
+
+- "Please crawl current Toutiao news" (temporary query)
+- "Help me fetch latest news from Zhihu and Weibo and save" (persistent)
+- "Trigger a crawl and save data" (persistent)
+- "Get real-time data from 36Kr but don't save" (temporary query)
+
+**Two modes:**
+
+| Mode | Purpose | Example |
 | -------------- | -------------------- | -------------------- |
-| **临时爬取**   | 只返回数据不保存     | "爬取今日头条的新闻" |
-| **持久化爬取** | 保存到 output 文件夹 | "抓取并保存知乎新闻" |
+| **Temporary Crawl** | Only return data without saving | "Crawl Toutiao news" |
+| **Persistent Crawl** | Save to output folder | "Fetch and save Zhihu news" |
 
-**工具返回行为：**
+**Tool return behavior:**
 
-- 默认为临时爬取模式（不保存）
-- 默认爬取所有平台
-- 默认不包含 URL 链接
+- Default is temporary crawl mode (no save)
+- Default crawls all platforms
+- Does not include URL links by default
 
-**AI 展示行为（重要）：**
+**AI display behavior (Important):**
 
-- ⚠️ **AI 通常会总结爬取结果**，只展示部分新闻
-- ✅ 如果你想看全部，需要明确要求："展示所有爬取的新闻"
+- ⚠️ **AI usually summarizes crawl results**, only showing partial news
+- ✅ If you want to see all, need to explicitly request: "show all crawled news"
 
-**可以调整：**
+**Can be adjusted:**
 
-- 指定平台：如"只爬取知乎"
-- 保存数据：说"并保存"或"保存到本地"
-- 包含链接：说"需要链接"
-
----
-
-## 存储同步
-
-### Q15: 如何从远程存储同步数据到本地？
-
-**你可以这样问：**
-
-- "从远程同步最近 7 天的数据"
-- "拉取远程存储的数据到本地"
-- "同步最近 30 天的新闻数据"
-
-**使用场景：**
-
-- 爬虫部署在云端（如 GitHub Actions），数据存储到远程（如 Cloudflare R2）
-- MCP Server 部署在本地，需要从远程拉取数据进行分析
-
-**返回信息：**
-
-- 成功同步的文件数量
-- 成功同步的日期列表
-- 跳过的日期（本地已存在）
-- 失败的日期及错误信息
-
-**前提条件：**
-
-需要在配置文件中配置远程存储或设置环境变量：
-- 服务端点 URL
-- 存储桶名称
-- 访问密钥 ID
-- 访问密钥
+- Specify platform: like "only crawl Zhihu"
+- Save data: say "and save" or "save locally"
+- Include links: say "need links"
 
 ---
 
-### Q16: 如何查看存储状态？
+## Storage Sync
 
-**你可以这样问：**
+### Q15: How to sync data from remote storage to local?
 
-- "查看当前存储状态"
-- "存储配置是什么"
-- "本地有多少数据"
-- "远程存储配置了吗"
+**You can ask like this:**
 
-**返回信息：**
+- "Sync last 7 days data from remote"
+- "Pull data from remote storage to local"
+- "Sync last 30 days of news data"
 
-| 类别 | 信息 |
-|------|------|
-| **本地存储** | 数据目录、总大小、日期数量、日期范围 |
-| **远程存储** | 是否配置、端点地址、存储桶名称、日期数量 |
-| **拉取配置** | 是否启用自动拉取、拉取天数 |
+**Use cases:**
 
----
+- Crawler deployed in the cloud (e.g., GitHub Actions), data stored remotely (e.g., Cloudflare R2)
+- MCP Server deployed locally, needs to pull data from remote for analysis
 
-### Q17: 如何查看可用的数据日期？
+**Return information:**
 
-**你可以这样问：**
+- Number of successfully synced files
+- List of successfully synced dates
+- Skipped dates (already exist locally)
+- Failed dates and error information
 
-- "本地有哪些日期的数据"
-- "远程存储有哪些日期"
-- "对比本地和远程的数据日期"
-- "哪些日期只在远程有"
+**Prerequisites:**
 
-**三种查询模式：**
-
-| 模式 | 说明 | 示例问法 |
-|------|------|---------|
-| **本地** | 仅查看本地 | "本地有哪些日期" |
-| **远程** | 仅查看远程 | "远程有哪些日期" |
-| **对比** | 对比两者（默认） | "对比本地和远程的数据" |
-
-**返回信息（对比模式）：**
-
-- 仅本地存在的日期
-- 仅远程存在的日期（可用于决定同步哪些日期）
-- 两边都存在的日期
+Need to configure remote storage in config file or set environment variables:
+- Service endpoint URL
+- Bucket name
+- Access key ID
+- Secret access key
 
 ---
 
-### Q18: 如何解析自然语言日期表达式？（推荐优先使用）
+### Q16: How to view storage status?
 
-**你可以这样问：**
+**You can ask like this:**
 
-- "解析'本周'是哪几天"
-- "最近7天对应的日期范围是什么"
-- "上月的日期范围"
-- "帮我把'最近30天'转换为具体日期"
+- "View current storage status"
+- "What's the storage configuration"
+- "How much data is stored locally"
+- "Is remote storage configured"
 
-**为什么需要这个工具？**
+**Return information:**
 
-用户经常使用"本周"、"最近7天"等自然语言表达日期，但不同的 AI 模型自行计算日期时会产生不一致的结果。此工具使用服务器端的精确时间计算，确保所有 AI 模型获得一致的日期范围。
+| Category | Information |
+|----------|-------------|
+| **Local Storage** | Data directory, total size, date count, date range |
+| **Remote Storage** | Whether configured, endpoint URL, bucket name, date count |
+| **Pull Config** | Whether auto-pull enabled, pull days |
 
-**支持的日期表达式：**
+---
 
-| 类型 | 中文表达 | 英文表达 |
+### Q17: How to view available data dates?
+
+**You can ask like this:**
+
+- "What dates are available locally"
+- "What dates are in remote storage"
+- "Compare local and remote data dates"
+- "Which dates only exist remotely"
+
+**Three query modes:**
+
+| Mode | Description | Example Question |
+|------|-------------|------------------|
+| **Local** | View local only | "What dates are available locally" |
+| **Remote** | View remote only | "What dates are in remote" |
+| **Compare** | Compare both (default) | "Compare local and remote data" |
+
+**Return information (compare mode):**
+
+- Dates only existing locally
+- Dates only existing remotely (useful for deciding which dates to sync)
+- Dates existing in both places
+
+---
+
+### Q18: How to parse natural language date expressions? (Recommended to use first)
+
+**You can ask like this:**
+
+- "Parse what days 'this week' is"
+- "What date range does 'last 7 days' correspond to"
+- "Last month's date range"
+- "Help me convert 'last 30 days' to specific dates"
+
+**Why is this tool needed?**
+
+Users often use natural language like "this week", "last 7 days" to express dates, but different AI models calculating dates on their own will produce inconsistent results. This tool uses server-side precise time calculations to ensure all AI models get consistent date ranges.
+
+**Supported date expressions:**
+
+| Type | Chinese Expression | English Expression |
 |------|---------|---------|
-| 单日 | 今天、昨天 | today, yesterday |
-| 周 | 本周、上周 | this week, last week |
-| 月 | 本月、上月 | this month, last month |
-| 最近N天 | 最近7天、最近30天 | last 7 days, last 30 days |
-| 动态 | 最近N天（任意数字） | last N days |
+| Single Day | 今天、昨天 | today, yesterday |
+| Week | 本周、上周 | this week, last week |
+| Month | 本月、上月 | this month, last month |
+| Last N Days | 最近7天、最近30天 | last 7 days, last 30 days |
+| Dynamic | 最近N天 (any number) | last N days |
 
-**使用优势：**
+**Usage advantages:**
 
-- ✅ **一致性**：所有 AI 模型获得相同的日期范围
-- ✅ **准确性**：基于服务器端精确时间计算
-- ✅ **标准化**：返回标准日期格式
-- ✅ **灵活性**：支持中英文、动态天数
-
----
-
-## 文章内容读取
-
-### Q19: 如何读取新闻文章的正文内容？
-
-**你可以这样问：**
-
-- "帮我读取这篇新闻的内容：https://example.com/news/123"
-- "获取这个链接的文章正文"
-- "读取这篇报道的详细内容"
-
-**工具功能：**
-
-- 通过 Jina AI Reader 将网页转换为干净的 Markdown 格式
-- 自动去除广告、导航栏、侧边栏等噪音内容
-- 返回 LLM 友好的结构化内容
-
-**典型使用流程：**
-
-1. 先用 `search_news(include_url=True)` 搜索新闻获取链接
-2. 再用 `read_article(url=链接)` 读取正文内容
-3. AI 对 Markdown 正文进行分析、摘要、翻译等
-
-**返回信息：**
-
-| 字段 | 说明 |
-|------|------|
-| **content** | Markdown 格式的文章正文 |
-| **url** | 原始链接 |
-| **content_length** | 内容长度（字符数） |
-
-**可以调整：**
-
-- 超时时间：如"超时设为 60 秒"（默认 30 秒，最大 60 秒）
-
-**注意事项：**
-
-- 每次请求间隔 5 秒（内置速率控制）
-- 使用 Jina AI Reader 免费服务（100 RPM 限制）
-- 部分付费墙/登录墙页面可能无法完整获取
+- ✅ **Consistency**: All AI models get the same date range
+- ✅ **Accuracy**: Based on server-side precise time calculation
+- ✅ **Standardization**: Returns standard date format
+- ✅ **Flexibility**: Supports Chinese/English, dynamic days
 
 ---
 
-### Q20: 如何批量读取多篇文章？
+## Article Content Reading
 
-**你可以这样问：**
+### Q19: How to read the full content of a news article?
 
-- "帮我读取这几篇新闻的内容"
-- "批量获取这些链接的文章正文"
-- "读取搜索结果中前 3 篇的详细内容"
+**You can ask like this:**
 
-**典型使用流程：**
+- "Help me read the content of this news: https://example.com/news/123"
+- "Get the article body from this link"
+- "Read the detailed content of this report"
 
-1. 先用 `search_news(include_url=True)` 搜索新闻获取多个链接
-2. 再用 `read_articles_batch(urls=[...])` 批量读取正文
-3. AI 对多篇文章进行对比分析、综合报告
+**Tool functionality:**
 
-**工具限制：**
+- Converts web pages to clean Markdown format via Jina AI Reader
+- Automatically removes ads, navigation bars, sidebars, and other noise
+- Returns LLM-friendly structured content
 
-| 限制 | 值 |
-|------|------|
-| 单次最多篇数 | **5 篇** |
-| 请求间隔 | **5 秒** |
-| 预计耗时（5篇） | **25-30 秒** |
+**Typical workflow:**
 
-**返回信息：**
+1. First use `search_news(include_url=True)` to search news and get links
+2. Then use `read_article(url=link)` to read the article body
+3. AI analyzes, summarizes, translates the Markdown content
 
-| 字段 | 说明 |
-|------|------|
-| **summary** | 批量读取的统计信息 |
-| **articles** | 每篇文章的内容和状态 |
-| **note** | 如有跳过的文章，会说明原因 |
+**Return information:**
 
-**注意事项：**
+| Field | Description |
+|-------|-------------|
+| **content** | Article body in Markdown format |
+| **url** | Original link |
+| **content_length** | Content length (characters) |
 
-- 超出 5 篇的部分会被自动跳过
-- 单篇失败不影响其他篇的读取
-- 篇数越多耗时越长，请耐心等待
+**Can be adjusted:**
+
+- Timeout: like "set timeout to 60 seconds" (default 30 seconds, max 60 seconds)
+
+**Notes:**
+
+- 5-second interval between requests (built-in rate control)
+- Uses Jina AI Reader free service (100 RPM limit)
+- Some paywalled/login-required pages may not be fully accessible
 
 ---
 
-## 通知推送
+### Q20: How to batch read multiple articles?
 
-### Q21: 如何通过 MCP 发送通知消息？
+**You can ask like this:**
 
-**你可以这样问：**
+- "Help me read the content of these news articles"
+- "Batch get the article bodies from these links"
+- "Read the detailed content of the first 3 search results"
 
-- "查看当前配置了哪些通知渠道"
-- "发送一条测试消息到所有渠道"
-- "把这段内容推送到飞书"
-- "发送今天的新闻摘要到钉钉和 Telegram"
+**Typical workflow:**
 
-**支持的通知渠道（9 个）：**
+1. First use `search_news(include_url=True)` to search news and get multiple links
+2. Then use `read_articles_batch(urls=[...])` to batch read article bodies
+3. AI performs comparative analysis, comprehensive reports on multiple articles
 
-| 渠道 | 消息格式 | 配置来源 |
-|------|---------|---------|
-| **飞书** (feishu) | 纯文本 | `FEISHU_WEBHOOK_URL` |
-| **钉钉** (dingtalk) | Markdown | `DINGTALK_WEBHOOK_URL` |
-| **企业微信** (wework) | Markdown | `WEWORK_WEBHOOK_URL` |
+**Tool limits:**
+
+| Limit | Value |
+|-------|-------|
+| Max articles per batch | **5** |
+| Request interval | **5 seconds** |
+| Estimated time (5 articles) | **25-30 seconds** |
+
+**Return information:**
+
+| Field | Description |
+|-------|-------------|
+| **summary** | Statistics of batch reading |
+| **articles** | Content and status of each article |
+| **note** | If any articles were skipped, explains why |
+
+**Notes:**
+
+- Articles beyond 5 will be automatically skipped
+- Single article failure doesn't affect other articles
+- More articles mean longer wait time, please be patient
+
+---
+
+## Notification Push
+
+### Q21: How to send notification messages via MCP?
+
+**You can ask like this:**
+
+- "Show me which notification channels are configured"
+- "Send a test message to all channels"
+- "Push this content to Feishu"
+- "Send today's news summary to DingTalk and Telegram"
+
+**Supported notification channels (9):**
+
+| Channel | Message Format | Configuration |
+|---------|---------------|---------------|
+| **Feishu** | Plain text | `FEISHU_WEBHOOK_URL` |
+| **DingTalk** | Markdown | `DINGTALK_WEBHOOK_URL` |
+| **WeCom** | Markdown | `WEWORK_WEBHOOK_URL` |
 | **Telegram** | HTML | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` |
 | **Email** | HTML | `EMAIL_FROM` + `EMAIL_PASSWORD` + `EMAIL_TO` |
 | **ntfy** | Markdown | `NTFY_SERVER_URL` + `NTFY_TOPIC` |
 | **Bark** | Markdown | `BARK_URL` |
 | **Slack** | mrkdwn | `SLACK_WEBHOOK_URL` |
-| **通用 Webhook** | Markdown | `GENERIC_WEBHOOK_URL` |
+| **Generic Webhook** | Markdown | `GENERIC_WEBHOOK_URL` |
 
-**配置方式：**
+**Configuration methods:**
 
-- 在 `config.yaml` 的 `notification.channels` 中配置对应渠道
-- 或在 `.env` 文件中设置对应的环境变量（优先级更高）
-- 两种方式会自动合并，`.env` 中的值会覆盖 `config.yaml` 中的值
+- Configure channels in `config.yaml` under `notification.channels`
+- Or set corresponding environment variables in `.env` file (higher priority)
+- Both sources are automatically merged, `.env` values override `config.yaml` values
 
-**两个工具：**
+**Two tools:**
 
-| 工具 | 功能 | 示例问法 |
-|------|------|---------|
-| `get_notification_channels` | 检测已配置的渠道及状态 | "查看通知渠道配置" |
-| `send_notification` | 发送消息到指定或全部渠道 | "发送消息到飞书" |
+| Tool | Function | Example Question |
+|------|----------|------------------|
+| `get_notification_channels` | Detect configured channels and status | "View notification channel config" |
+| `send_notification` | Send message to specified or all channels | "Send message to Feishu" |
 
-**典型使用流程：**
+**Typical workflow:**
 
-1. 先查看渠道状态："查看当前配置了哪些通知渠道"
-2. 确认渠道可用后发送："把以下内容推送到钉钉：今日热点摘要..."
-3. 或指定多个渠道："发送到飞书和 Telegram"
-4. 不指定渠道则发送到所有已配置渠道
+1. Check channel status first: "Show me which notification channels are configured"
+2. Send after confirming availability: "Push the following to DingTalk: today's hotspot summary..."
+3. Or specify multiple channels: "Send to Feishu and Telegram"
+4. Without specifying channels, sends to all configured channels
 
-**消息格式：**
+**Message format:**
 
-- 工具接受 **Markdown 格式** 的消息内容
-- 自动按各渠道要求转换格式（飞书转纯文本、Telegram 转 HTML、Slack 转 mrkdwn 等）
-- 无需手动处理格式差异
+- The tool accepts messages in **Markdown format**
+- Automatically converts to each channel's required format (Feishu to plain text, Telegram to HTML, Slack to mrkdwn, etc.)
+- No need to manually handle format differences
 
-**多账号支持：**
+**Multi-account support:**
 
-- 配置值中用 `;` 分隔多个 URL/Token 即可发送到多个账号
-- 例如：`FEISHU_WEBHOOK_URL=url1;url2` 会同时发送到两个飞书群
+- Separate multiple URLs/Tokens with `;` in config values to send to multiple accounts
+- For example: `FEISHU_WEBHOOK_URL=url1;url2` sends to two Feishu groups simultaneously
 
 ---
 
-## 💡 使用技巧
+## 💡 Usage Tips
 
-### 1. 如何让 AI 展示全部数据而不是自动总结？
+### 1. How to make AI display all data instead of auto-summarizing?
 
-**背景**: 有时 AI 会自动总结数据，只展示部分内容，即使工具返回了完整的 50 条数据。
+**Background**: Sometimes AI automatically summarizes data, only showing partial content, even if the tool returned complete 50 items of data.
 
-**如果 AI 仍然总结，你可以**:
+**If AI still summarizes, you can**:
 
-- **方法 1 - 明确要求**: "请展示全部新闻，不要总结"
-- **方法 2 - 指定数量**: "展示所有 50 条新闻"
-- **方法 3 - 质疑行为**: "为什么只展示了 15 条？我要看全部"
-- **方法 4 - 提前说明**: "查询今天的新闻，完整展示所有结果"
+- **Method 1 - Explicit request**: "Please show all news, don't summarize"
+- **Method 2 - Specify quantity**: "Show all 50 news items"
+- **Method 3 - Question the behavior**: "Why only showed 15? I want to see all"
+- **Method 4 - State upfront**: "Query today's news, fully display all results"
 
-**注意**: AI 仍可能根据上下文调整展示方式。
+**Note**: AI may still adjust display method based on context.
 
 
-### 2. 如何组合使用多个工具？
+### 2. How to combine multiple tools?
 
-**示例：深度分析某个话题**
+**Example: In-depth analysis of a topic**
 
-1. 先搜索："搜索'人工智能'相关新闻"
-2. 再分析趋势："分析'人工智能'的热度趋势"
-3. 最后情感分析："分析'人工智能'新闻的情感倾向"
+1. Search first: "Search for news about 'artificial intelligence'"
+2. Then analyze trends: "Analyze the heat trend of 'artificial intelligence'"
+3. Finally sentiment analysis: "Analyze sentiment of 'artificial intelligence' news"
 
-**示例：追踪某个事件**
+**Example: Track an event**
 
-1. 查看最新："查询今天关于'iPhone'的新闻"
-2. 查找历史："查找上周与'iPhone'相关的历史新闻"
-3. 找相似报道："找出和'iPhone 发布会'相似的新闻"
-
+1. View latest: "Query today's news about 'iPhone'"
+2. Find history: "Find historical news related to 'iPhone' from last week"
+3. Find similar reports: "Find news similar to 'iPhone launch event'"

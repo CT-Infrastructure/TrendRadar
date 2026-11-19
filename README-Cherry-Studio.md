@@ -1,154 +1,92 @@
-# TrendRadar × Cherry Studio 部署指南 🍒
+# TrendRadar × Cherry Studio Setup Guide 🍒
 
-> **适合人群**：零编程基础的用户
-> **客户端**：Cherry Studio（免费开源 GUI 客户端）
+**English** | **[中文](README-Cherry-Studio-ZH.md)**
 
----
+> **Audience:** Users with no programming experience.
+> **Client:** Cherry Studio, a free, open-source graphical AI client.
 
-## 📥 第一步：下载 Cherry Studio
+## 1. Download Cherry Studio
 
-### Windows 用户
+Download the Windows or macOS installer from the [official website](https://cherry-ai.com/) or the [latest GitHub release](https://github.com/kangfenmao/cherry-studio/releases/latest). Choose the installer for your operating system and processor.
 
-访问官网下载：https://cherry-ai.com/
-或直接下载：[Cherry-Studio-Windows.exe](https://github.com/kangfenmao/cherry-studio/releases/latest)
+## 2. Get the project and its news data
 
-### Mac 用户
+The MCP tools need access to the news collected by TrendRadar. The crawler stores that data in the project's `output` directory. Keep a local checkout of this English edition and make sure it can access the data from your deployment before configuring the MCP server.
 
-访问官网下载：https://cherry-ai.com/
-或直接下载：[Cherry-Studio-Mac.dmg](https://github.com/kangfenmao/cherry-studio/releases/latest)
-
-
----
-
-## 📦 第二步：获取项目代码
-
-为什么需要获取项目代码？
-
-AI 分析功能需要读取项目中的新闻数据才能工作。无论你使用 GitHub Actions 还是 Docker 部署，爬虫生成的新闻数据都保存在项目的 output 目录中。因此，在配置 MCP 服务器之前，需要先获取完整的项目代码（包含数据文件）。
-
-根据你的技术水平，可以选择以下任一方式获取：：
-
-### 方法一：Git Clone（推荐给技术用户）
-
-如果你熟悉 Git，可以使用以下命令克隆项目：
+### Option A: Clone with Git
 
 ```bash
-git clone https://github.com/你的用户名/你的项目名.git
-cd 你的项目名
+git clone https://github.com/CT-Infrastructure/TrendRadar.git
+cd TrendRadar
 ```
 
-**优点**：
+If your own fork contains the data you need, clone that fork instead. Run `git pull` later to update tracked files. If your deployment stores data remotely, use TrendRadar's storage synchronization features; cloning the source code alone does not download remote storage.
 
-- 可以随时拉取一个命令就可以更新最新数据到本地了（`git pull`）
+### Option B: Download a ZIP
 
-### 方法二：直接下载 ZIP 压缩包（推荐给初学者）
+1. Open [CT-Infrastructure/TrendRadar](https://github.com/CT-Infrastructure/TrendRadar), or your own fork.
+2. Select **Code → Download ZIP**.
+3. Extract the archive to a permanent folder.
 
+You can also download the [master branch ZIP](https://github.com/CT-Infrastructure/TrendRadar/archive/refs/heads/master.zip) directly. To update a ZIP installation, download a new copy and preserve your configuration and `output` data.
 
-1. **访问 GitHub 项目页面**
+## 3. Install the MCP server
 
-   - 项目链接：`https://github.com/你的用户名/你的项目名`
+### Windows
 
-2. **下载压缩包**
+1. Double-click `setup-windows.bat` in the project folder. `setup-windows-en.bat` remains available as an English compatibility entry point.
+2. Wait for installation to finish.
+3. Record the command path and arguments shown by the installer.
 
-   - 点击绿色的 "Code" 按钮
-   - 选择 "Download ZIP"
-   - 或直接访问：`https://github.com/你的用户名/你的项目名/archive/refs/heads/master.zip`
+### macOS
 
+1. Open **Terminal**.
+2. Drag `setup-mac.sh` from the project folder into the terminal window.
+3. Press **Return**.
+4. Record the command path and arguments shown by the installer.
 
-**注意事项**：
+## 4. Configure Cherry Studio
 
-- 步骤稍微麻烦，后续更新数据需要重复上面步骤，然后覆盖本地数据(output 目录)
+1. Open Cherry Studio's **Settings**.
+2. Find **MCP**, then select **Add**.
+3. Enter the command and arguments printed by the setup script. Use the actual paths from your installation.
+4. Save the configuration and turn on the server's switch in the MCP server list.
 
----
+## 5. Verify the connection
 
-## 🚀 第三步：一键部署 MCP 服务器
+Ask Cherry Studio:
 
-### Windows 用户
-
-1. **双击运行**项目文件夹中的 `setup-windows.bat`，如果有问题，就运行 `setup-windows-en.bat`
-2. **等待安装完成**
-3. **记录显示的配置信息**（命令路径和参数）
-
-### Mac 用户
-
-1. **打开终端**（在启动台搜索"终端"）
-2. **拖拽**项目文件夹中的 `setup-mac.sh` 到终端窗口
-3. **按回车键**
-4. **记录显示的配置信息**
-
----
-
-## 🔧 第四步：配置 Cherry Studio
-
-### 1. 打开设置
-
-启动 Cherry Studio，点击右上角 ⚙️ **设置** 按钮
-
-### 2. 添加 MCP 服务器
-
-在设置页面找到：**MCP** → 点击 **添加**
-
-### 3. 填写配置（重要！）
-
-根据刚才的安装脚本显示的信息填写
-
-### 4. 保存并启用
-
-- 点击 **保存** 按钮
-- 确保 MCP 服务器列表中的开关是 **开启** 状态 ✅
-
----
-
-## ✅ 第五步：验证是否成功
-
-### 1. 测试连接
-
-在 Cherry Studio 的对话框中输入：
-
-```
-帮我爬取最新的新闻
+```text
+Fetch the latest news with TrendRadar.
 ```
 
-或者尝试其他测试命令：
+Other examples:
 
+```text
+Search the last 3 days of news for "artificial intelligence".
+Find Tesla reports from January 2025.
+Analyze the popularity trend for "iPhone".
 ```
-搜索最近3天关于"人工智能"的新闻
-查找2025年1月的"特斯拉"相关报道
-分析"iPhone"的热度趋势
-```
 
-**提示**：当你说"最近3天"时，AI会自动计算日期范围并搜索。
+The available results depend on the data collected by your deployment. When you give a relative date such as "the last 3 days", the date-resolution tool calculates the date range.
 
-### 2. 成功标志
+A working connection should let the AI call TrendRadar tools and return collected news with source platforms, headlines, and rankings. See the [MCP tool guide](README-MCP-FAQ.md) for more examples.
 
-如果配置成功，AI 会：
+## Optional: HTTP mode
 
-- ✅ 调用 TrendRadar 工具
-- ✅ 返回真实的新闻数据
-- ✅ 显示平台、标题、排名等信息
+HTTP mode can serve clients separately from the STDIO launcher. Start the server before connecting a client.
 
-
----
-
-## 🎯 进阶配置
-
-### HTTP 模式（可选）
-
-如果需要远程访问或多客户端共享，可以使用 HTTP 模式：
-
-#### Windows
-
-双击运行 `start-http.bat`
-
-#### Mac
+On Windows, double-click `start-http.bat`. On macOS or Linux, run:
 
 ```bash
 ./start-http.sh
 ```
 
-然后在 Cherry Studio 中配置：
+Then configure Cherry Studio with:
 
-```
-类型: streamableHttp
+```text
+Type: streamableHttp
 URL: http://localhost:3333/mcp
 ```
+
+This URL addresses a server on the same computer. Remote access requires a separately configured host and network connection; the default local endpoint is not a public service.

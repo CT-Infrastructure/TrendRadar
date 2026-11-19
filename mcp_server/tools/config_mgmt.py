@@ -79,5 +79,5 @@ class ConfigManagementTools:
                 success=False,
                 config=None,
                 section=None,
-                error={"code": "INTERNAL_ERROR", "message": str(e), "suggestion": "请查看服务日志获取详细信息"}
+                error={"code": "INTERNAL_ERROR", "message": str(e), "suggestion": "Check the service logs for details"}
             )

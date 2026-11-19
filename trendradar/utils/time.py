@@ -27,7 +27,7 @@ def get_configured_time(timezone: str = DEFAULT_TIMEZONE) -> datetime:
     try:
         tz = pytz.timezone(timezone)
     except pytz.UnknownTimeZoneError:
-        print(f"[警告] 未知时区 '{timezone}'，使用默认时区 {DEFAULT_TIMEZONE}")
+        print(f"[Warning] Unknown time zone '{timezone}'; using the default time zone {DEFAULT_TIMEZONE}")
         tz = pytz.timezone(DEFAULT_TIMEZONE)
     return datetime.now(tz)
 

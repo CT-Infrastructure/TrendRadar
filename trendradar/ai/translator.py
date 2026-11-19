@@ -59,7 +59,7 @@ class AITranslator:
         # 加载提示词模板
         self.system_prompt, self.user_prompt_template = load_prompt_template(
             translation_config.get("PROMPT_FILE", "ai_translation_prompt.txt"),
-            label="翻译",
+            label="Translation",
         )
 
     def translate(self, text: str) -> TranslationResult:
@@ -75,11 +75,11 @@ class AITranslator:
         result = TranslationResult(original_text=text)
 
         if not self.enabled:
-            result.error = "翻译功能未启用"
+            result.error = "Translation is disabled"
             return result
 
         if not self.client.api_key:
-            result.error = "未配置 AI API Key"
+            result.error = "AI API key is not configured"
             return result
 
         if not text or not text.strip():
@@ -103,7 +103,7 @@ class AITranslator:
             error_msg = str(e)
             if len(error_msg) > 100:
                 error_msg = error_msg[:100] + "..."
-            result.error = f"翻译失败 ({error_type}): {error_msg}"
+            result.error = f"Translation failed ({error_type}): {error_msg}"
 
         return result
 
@@ -123,7 +123,7 @@ class AITranslator:
             for text in texts:
                 batch_result.results.append(TranslationResult(
                     original_text=text,
-                    error="翻译功能未启用"
+                    error="Translation is disabled"
                 ))
             batch_result.fail_count = len(texts)
             return batch_result
@@ -132,7 +132,7 @@ class AITranslator:
             for text in texts:
                 batch_result.results.append(TranslationResult(
                     original_text=text,
-                    error="未配置 AI API Key"
+                    error="AI API key is not configured"
                 ))
             batch_result.fail_count = len(texts)
             return batch_result
@@ -199,7 +199,7 @@ class AITranslator:
                     batch_result.success_count += 1
 
         except Exception as e:
-            error_msg = f"批量翻译失败: {type(e).__name__}: {str(e)[:100]}"
+            error_msg = f"Batch translation failed: {type(e).__name__}: {str(e)[:100]}"
             for idx in non_empty_indices:
                 batch_result.results[idx].error = error_msg
             batch_result.fail_count = len(non_empty_indices)

@@ -51,58 +51,58 @@ def _save_report(
             json.dumps(report, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
-        print(f"体检报告已保存: {output_path}")
+        print(f"Diagnostic report saved: {output_path}")
     except Exception as e:
-        print(f"⚠️ 体检报告保存失败: {e}")
+        print(f"⚠️ Failed to save diagnostic report: {e}")
 
 
 def run_doctor(config_path: Optional[str] = None) -> bool:
     """运行环境体检"""
     print("=" * 60)
-    print(f"TrendRadar v{__version__} 环境体检")
+    print(f"TrendRadar v{__version__} Environment diagnostics")
     print("=" * 60)
 
     results: List[Tuple[str, str, str]] = []
     config = None
 
     # 1) Python 版本检查
-    py_ok = sys.version_info >= (3, 10)
+    py_ok = sys.version_info >= (3, 12)
     py_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     if py_ok:
-        _record_result(results, "pass", "Python版本", f"{py_version} (满足 >= 3.10)")
+        _record_result(results, "pass", "Python version", f"{py_version} (meets >= 3.12)")
     else:
-        _record_result(results, "fail", "Python版本", f"{py_version} (不满足 >= 3.10)")
+        _record_result(results, "fail", "Python version", f"{py_version} (does not meet >= 3.12)")
 
     # 2) 关键文件检查
     if config_path is None:
         config_path = os.environ.get("CONFIG_PATH", "config/config.yaml")
 
     required_files = [
-        (config_path, "主配置文件"),
-        ("config/frequency_words.txt", "关键词文件"),
+        (config_path, "Main configuration"),
+        ("config/frequency_words.txt", "Keyword file"),
     ]
     optional_files = [
-        ("config/timeline.yaml", "调度文件"),
+        ("config/timeline.yaml", "Schedule file"),
     ]
 
     for path_str, desc in required_files:
         if Path(path_str).exists():
-            _record_result(results, "pass", desc, f"已找到: {path_str}")
+            _record_result(results, "pass", desc, f"Found: {path_str}")
         else:
-            _record_result(results, "fail", desc, f"缺失: {path_str}")
+            _record_result(results, "fail", desc, f"Missing: {path_str}")
 
     for path_str, desc in optional_files:
         if Path(path_str).exists():
-            _record_result(results, "pass", desc, f"已找到: {path_str}")
+            _record_result(results, "pass", desc, f"Found: {path_str}")
         else:
-            _record_result(results, "warn", desc, f"未找到: {path_str}（将使用默认调度模板）")
+            _record_result(results, "warn", desc, f"Not found: {path_str} (the default schedule template will be used)")
 
     # 3) 配置加载检查
     try:
         config = load_config(config_path)
-        _record_result(results, "pass", "配置加载", f"加载成功: {config_path}")
+        _record_result(results, "pass", "Configuration loading", f"Loaded: {config_path}")
     except Exception as e:
-        _record_result(results, "fail", "配置加载", f"加载失败: {e}")
+        _record_result(results, "fail", "Configuration loading", f"Loading failed: {e}")
 
     if config:
         _check_with_config(results, config)
@@ -114,14 +114,14 @@ def run_doctor(config_path: Optional[str] = None) -> bool:
     _save_report(results, pass_count, warn_count, fail_count, config_path)
 
     print("-" * 60)
-    print(f"体检结果: ✅ {pass_count} 项通过  ⚠️ {warn_count} 项警告  ❌ {fail_count} 项失败")
+    print(f"Diagnostic results: ✅ {pass_count} passed  ⚠️ {warn_count} warnings  ❌ {fail_count} failed")
     print("=" * 60)
 
     if fail_count == 0:
-        print("体检通过。")
+        print("Diagnostics passed.")
         return True
 
-    print("体检未通过，请先修复失败项。")
+    print("Diagnostics failed. Resolve the failed checks before continuing.")
     return False
 
 
@@ -130,10 +130,10 @@ def _check_with_config(results: List[Tuple[str, str, str]], config: Dict) -> Non
     try:
         ctx = AppContext(config)
         schedule = ctx.create_scheduler().resolve()
-        detail = f"调度解析成功（report_mode={schedule.report_mode}, ai_mode={schedule.ai_mode}）"
-        _record_result(results, "pass", "调度配置", detail)
+        detail = f"Schedule resolved (report_mode={schedule.report_mode}, ai_mode={schedule.ai_mode})"
+        _record_result(results, "pass", "Schedule configuration", detail)
     except Exception as e:
-        _record_result(results, "fail", "调度配置", f"解析失败: {e}")
+        _record_result(results, "fail", "Schedule configuration", f"Parsing failed: {e}")
 
     # 5) AI 配置检查
     ai_analysis_enabled = config.get("AI_ANALYSIS", {}).get("ENABLED", False)
@@ -146,16 +146,16 @@ def _check_with_config(results: List[Tuple[str, str, str]], config: Dict) -> Non
             from trendradar.ai.client import AIClient
             valid, message = AIClient(config.get("AI", {})).validate_config()
             if valid:
-                _record_result(results, "pass", "AI配置", f"模型: {config.get('AI', {}).get('MODEL', '')}")
+                _record_result(results, "pass", "AI configuration", f"Model: {config.get('AI', {}).get('MODEL', '')}")
             else:
                 if ai_analysis_enabled or ai_translation_enabled:
-                    _record_result(results, "fail", "AI配置", message)
+                    _record_result(results, "fail", "AI configuration", message)
                 else:
-                    _record_result(results, "warn", "AI配置", f"{message}（AI 筛选将回退关键词模式）")
+                    _record_result(results, "warn", "AI configuration", f"{message} (AI filtering will fall back to keyword mode)")
         except Exception as e:
-            _record_result(results, "fail", "AI配置", f"校验异常: {e}")
+            _record_result(results, "fail", "AI configuration", f"Validation error: {e}")
     else:
-        _record_result(results, "warn", "AI配置", "未启用 AI 功能，跳过校验")
+        _record_result(results, "warn", "AI configuration", "AI features disabled; skipping validation")
 
     # 6) 存储配置检查
     try:
@@ -169,19 +169,19 @@ def _check_with_config(results: List[Tuple[str, str, str]], config: Dict) -> Non
 
         if backend == "remote" and missing_remote_keys:
             _record_result(
-                results, "fail", "存储配置",
-                f"remote 模式缺少配置: {', '.join(missing_remote_keys)}"
+                results, "fail", "Storage configuration",
+                f"Missing remote storage settings: {', '.join(missing_remote_keys)}"
             )
         elif backend == "auto" and os.environ.get("GITHUB_ACTIONS") == "true" and missing_remote_keys:
             _record_result(
-                results, "warn", "存储配置",
-                "GitHub Actions + auto 模式未完整配置远程存储，可能导致数据丢失"
+                results, "warn", "Storage configuration",
+                "GitHub Actions with auto storage has incomplete remote settings; data may not persist"
             )
         else:
             sm = AppContext(config).get_storage_manager()
-            _record_result(results, "pass", "存储配置", f"当前后端: {sm.backend_name}")
+            _record_result(results, "pass", "Storage configuration", f"Current backend: {sm.backend_name}")
     except Exception as e:
-        _record_result(results, "fail", "存储配置", f"检查失败: {e}")
+        _record_result(results, "fail", "Storage configuration", f"Check failed: {e}")
 
     # 7) 通知渠道配置检查
     _check_notification_channels(results, config)
@@ -193,9 +193,9 @@ def _check_with_config(results: List[Tuple[str, str, str]], config: Dict) -> Non
         probe_file = output_dir / ".doctor_write_probe"
         probe_file.write_text("ok", encoding="utf-8")
         probe_file.unlink(missing_ok=True)
-        _record_result(results, "pass", "输出目录", f"可写: {output_dir}")
+        _record_result(results, "pass", "Output directory", f"Writable: {output_dir}")
     except Exception as e:
-        _record_result(results, "fail", "输出目录", f"不可写: {e}")
+        _record_result(results, "fail", "Output directory", f"Not writable: {e}")
 
 
 def _check_notification_channels(results: List[Tuple[str, str, str]], config: Dict) -> None:
@@ -204,16 +204,16 @@ def _check_notification_channels(results: List[Tuple[str, str, str]], config: Di
     max_accounts = config.get("MAX_ACCOUNTS_PER_CHANNEL", 3)
 
     for key, name in [
-        ("FEISHU_WEBHOOK_URL", "飞书"),
-        ("DINGTALK_WEBHOOK_URL", "钉钉"),
-        ("WEWORK_WEBHOOK_URL", "企业微信"),
+        ("FEISHU_WEBHOOK_URL", "Feishu"),
+        ("DINGTALK_WEBHOOK_URL", "DingTalk"),
+        ("WEWORK_WEBHOOK_URL", "WeCom"),
         ("BARK_URL", "Bark"),
         ("SLACK_WEBHOOK_URL", "Slack"),
-        ("GENERIC_WEBHOOK_URL", "通用Webhook"),
+        ("GENERIC_WEBHOOK_URL", "Generic webhook"),
     ]:
         values = parse_multi_account_config(config.get(key, ""))
         if values:
-            channel_details.append(f"{name}({min(len(values), max_accounts)}个)")
+            channel_details.append(f"{name}({min(len(values), max_accounts)} accounts)")
 
     tg_tokens = parse_multi_account_config(config.get("TELEGRAM_BOT_TOKEN", ""))
     tg_chats = parse_multi_account_config(config.get("TELEGRAM_CHAT_ID", ""))
@@ -224,9 +224,9 @@ def _check_notification_channels(results: List[Tuple[str, str, str]], config: Di
             required_keys=["bot_token", "chat_id"],
         )
         if valid and count > 0:
-            channel_details.append(f"Telegram({min(count, max_accounts)}个)")
+            channel_details.append(f"Telegram({min(count, max_accounts)} accounts)")
         else:
-            channel_issues.append("Telegram bot_token/chat_id 配置不完整或数量不一致")
+            channel_issues.append("Telegram bot_token/chat_id settings are incomplete or their counts do not match")
 
     ntfy_server = config.get("NTFY_SERVER_URL", "")
     ntfy_topics = parse_multi_account_config(config.get("NTFY_TOPIC", ""))
@@ -238,26 +238,26 @@ def _check_notification_channels(results: List[Tuple[str, str, str]], config: Di
                 "ntfy",
             )
             if valid and count > 0:
-                channel_details.append(f"ntfy({min(count, max_accounts)}个)")
+                channel_details.append(f"ntfy({min(count, max_accounts)} accounts)")
             else:
-                channel_issues.append("ntfy topic/token 数量不一致")
+                channel_issues.append("ntfy topic/token counts do not match")
         else:
-            channel_details.append(f"ntfy({min(len(ntfy_topics), max_accounts)}个)")
+            channel_details.append(f"ntfy({min(len(ntfy_topics), max_accounts)} accounts)")
 
     email_ready = all(
         [config.get("EMAIL_FROM"), config.get("EMAIL_PASSWORD"), config.get("EMAIL_TO")]
     )
     if email_ready:
-        channel_details.append("邮件")
+        channel_details.append("Email")
     elif any([config.get("EMAIL_FROM"), config.get("EMAIL_PASSWORD"), config.get("EMAIL_TO")]):
-        channel_issues.append("邮件配置不完整（需要 from/password/to 同时配置）")
+        channel_issues.append("Email settings are incomplete (from/password/to are all required)")
 
     if channel_issues and not channel_details:
-        _record_result(results, "fail", "通知配置", "；".join(channel_issues))
+        _record_result(results, "fail", "Notification configuration", "; ".join(channel_issues))
     elif channel_issues and channel_details:
-        detail = f"可用渠道: {', '.join(channel_details)}；问题: {'；'.join(channel_issues)}"
-        _record_result(results, "warn", "通知配置", detail)
+        detail = f"Available channels: {', '.join(channel_details)}; issues: {'; '.join(channel_issues)}"
+        _record_result(results, "warn", "Notification configuration", detail)
     elif channel_details:
-        _record_result(results, "pass", "通知配置", f"可用渠道: {', '.join(channel_details)}")
+        _record_result(results, "pass", "Notification configuration", f"Available channels: {', '.join(channel_details)}")
     else:
-        _record_result(results, "warn", "通知配置", "未配置任何通知渠道")
+        _record_result(results, "warn", "Notification configuration", "No notification channels configured")

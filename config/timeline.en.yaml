@@ -12,7 +12,7 @@
 #     preset: "morning_evening"    ← change it here
 #
 #
-# Visual config editor: https://sansan0.github.io/TrendRadar/
+# Visual config editor: open docs/index.html from this checkout
 #
 #
 # ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
@@ -85,7 +85,7 @@
 #
 #   1️⃣ always_on        Always on, push whenever there's new (default)
 #   2️⃣ morning_evening  Push all day + an evening summary (recommended for most)
-#   3️⃣ office_hours     Three-block workday: onboarding brief → noon hot → wrap-up summary
+#   3️⃣ office_hours     Three-block workday: morning briefing → noon update → wrap-up summary
 #   4️⃣ night_owl        Afternoon brief + late-night full-day summary
 #   5️⃣ custom           Fully custom (edit the custom section at the bottom of this file)
 #
@@ -224,7 +224,7 @@ presets:
   # ───────────────────────────────────────────────────────────
   office_hours:
     name: "Office Hours"
-    description: "Three-block workday push (onboarding → noon → wrap-up); free incremental on weekends."
+    description: "Three-block workday push (morning briefing → noon → wrap-up); free incremental on weekends."
 
     default:
       collect: true
@@ -248,7 +248,7 @@ presets:
         # once inherits default (analyze: true, push: true) → push/analyze once
 
       noon_update:
-        name: "Noon Hot"
+        name: "Noon Update"
         start: "13:00"
         end: "15:00"
         push: true                 # Push current on-list hotspots at noon

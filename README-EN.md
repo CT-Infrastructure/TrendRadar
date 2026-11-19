@@ -1,7 +1,7 @@
 <div align="center" id="trendradar">
 
-<a href="https://github.com/sansan0/TrendRadar" title="TrendRadar">
-  <img src="/_image/banner.webp" alt="TrendRadar Banner" width="80%">
+<a href="https://github.com/CT-Infrastructure/TrendRadar" title="TrendRadar English Edition">
+  <img src="_image/banner.webp" alt="TrendRadar Banner" width="80%">
 </a>
 
 Deploy in <strong>30 seconds</strong> — Say goodbye to endless scrolling, only see the news you truly care about
@@ -45,13 +45,43 @@ Deploy in <strong>30 seconds</strong> — Say goodbye to endless scrolling, only
 
 <div align="center">
 
-**[中文](README.md)** | **English**
+**English** | **[中文](README-ZH.md)**
 
 </div>
 
 > This project is designed to be lightweight and easy to deploy
 
 <br>
+
+## English Edition — CT-Infrastructure
+
+This fork uses English for its default documentation, configuration, setup tools, and generated report interface. It is based on [sansan0/TrendRadar](https://github.com/sansan0/TrendRadar); upstream authorship, acknowledgments, and the [GPL-3.0 license](LICENSE) are retained.
+
+### Run this edition
+
+```bash
+git clone https://github.com/CT-Infrastructure/TrendRadar.git
+cd TrendRadar
+uv sync --frozen
+uv run python -m trendradar
+```
+
+For Docker, build the code in this checkout so the container includes the English interface:
+
+```bash
+cd docker
+docker compose -f docker-compose-build.yml up -d --build
+```
+
+Open `docs/index.html` for the visual configuration editor. English is the default for new browser sessions; you can still select Chinese in the editor. The default README and MCP guide are English; the original documentation is available as [Chinese README](README-ZH.md), [Chinese MCP guide](README-MCP-FAQ-ZH.md), and [Chinese Cherry Studio guide](README-Cherry-Studio-ZH.md).
+
+### Language and news content
+
+`config/config.yaml`, `config/timeline.yaml`, keyword instructions, AI prompts, and interest descriptions are in English. AI analysis and headline translation target English by default. Source IDs, feed URLs, schedules, timezones, and keyword matching patterns retain their original behavior. Chinese keywords still match Chinese news; their display labels are English.
+
+Article text and historical data retain their source language. To translate matched hot-list headlines as well as RSS and standalone headlines, set `ai_translation.scope.hotlist: true` in `config/config.yaml`. The existing AI features require a configured provider API key; localization does not supply credentials. You can turn off `ai_analysis.enabled` and `ai_translation.enabled` to run without those AI calls.
+
+Existing configurations are not overwritten automatically. Review the English defaults before copying them into an existing deployment. The detailed upstream guide and historical changelog follow; upstream screenshots may still show Chinese interfaces, and upstream prebuilt Docker images do not include this fork's changes.
 
 ## 📑 Quick Navigation
 
@@ -890,7 +920,7 @@ WeWork and Telegram push messages have length limits, I adopted splitting messag
 ### 2025/06/21 - v1.2.1
 
 Before this version, not only main.py needs copy replacement, crawler.yml also needs you to copy replacement
-https://github.com/sansan0/TrendRadar/blob/master/.github/workflows/crawler.yml
+https://github.com/CT-Infrastructure/TrendRadar/blob/master/.github/workflows/crawler.yml
 
 
 ### 2025/06/19 - v1.2.0
@@ -995,7 +1025,7 @@ Switch between Chinese and English and use English configuration templates to se
 
 👉 **Try it online**: [https://sansan0.github.io/TrendRadar/](https://sansan0.github.io/TrendRadar/)
 
-<img src="/_image/editor.png" alt="Visual Configuration Editor" width="80%">
+<img src="_image/editor.png" alt="Visual Configuration Editor" width="80%">
 
 ### **Smart Push Strategies**
 
@@ -1264,7 +1294,7 @@ Transform from "algorithm recommendation captivity" to "actively getting the inf
    **2. Clone and run**
 
    ```bash
-   git clone https://github.com/sansan0/TrendRadar.git
+   git clone https://github.com/CT-Infrastructure/TrendRadar.git
    cd TrendRadar
    uv sync          # Automatically installs Python and project dependencies
    uv run python -m trendradar
@@ -1534,8 +1564,8 @@ Transform from "algorithm recommendation captivity" to "actively getting the inf
 > **Auto-detect**: When using above emails, no need to manually configure `EMAIL_SMTP_SERVER` and `EMAIL_SMTP_PORT`, system auto-detects.
 >
 > **Feedback Notice**:
-> - If you successfully test with **other email providers**, please open an [Issue](https://github.com/sansan0/TrendRadar/issues) to let us know, we'll add to support list
-> - If above email configurations are incorrect or unusable, please also open an [Issue](https://github.com/sansan0/TrendRadar/issues) for feedback to help improve the project
+> - If you successfully test with **other email providers**, please open an [Issue](https://github.com/CT-Infrastructure/TrendRadar/issues) to let us know, we'll add to support list
+> - If above email configurations are incorrect or unusable, please also open an [Issue](https://github.com/CT-Infrastructure/TrendRadar/issues) for feedback to help improve the project
 >
 > **Special Thanks**:
 > - Thanks to [@DYZYD](https://github.com/DYZYD) for contributing 189 Mail (189.cn) configuration and completing self-send-receive testing ([#291](https://github.com/sansan0/TrendRadar/issues/291))
@@ -2507,6 +2537,8 @@ BYD
 
 </details>
 
+<a id="3-push-mode-details"></a>
+
 ### 3. Which push mode should I choose?
 
 <details>
@@ -2567,6 +2599,8 @@ Assume you monitor "Apple" keyword, execute once per hour:
 
 </details>
 
+<a id="4-advanced-configuration---hotspot-weight-adjustment"></a>
+
 ### 4. How to adjust hotness algorithm?
 
 <details>
@@ -2615,6 +2649,8 @@ advanced:
 Core idea: Users pursuing speed and timeliness increase ranking weight, users pursuing depth and stability increase frequency weight.
 
 </details>
+
+<a id="5-push-format-reference"></a>
 
 ### 5. What will the messages look like?
 
@@ -2676,6 +2712,8 @@ Updated: 2025-01-15 12:30:15
 </details>
 
 
+<a id="-docker-deployment"></a>
+
 ### 6. Docker Deployment
 
 <details>
@@ -2703,7 +2741,7 @@ TrendRadar provides two independent Docker images, deploy according to your need
 
    ```bash
    # Clone project to local
-   git clone https://github.com/sansan0/TrendRadar.git
+   git clone https://github.com/CT-Infrastructure/TrendRadar.git
    cd TrendRadar
    ```
 
@@ -2825,7 +2863,7 @@ If you need custom code modifications or build your own image:
 
 ```bash
 # Clone project
-git clone https://github.com/sansan0/TrendRadar.git
+git clone https://github.com/CT-Infrastructure/TrendRadar.git
 cd TrendRadar
 
 # Modify config files
@@ -2932,13 +2970,14 @@ Generated reports and data are saved in `./output` directory by default. Data pe
 
 **📊 Web Report Access Paths**:
 
-TrendRadar generates daily summary HTML reports to two locations simultaneously:
+TrendRadar saves timestamped HTML reports and updates these entry points:
 
 | File Location | Access Method | Use Case |
 |--------------|---------------|----------|
 | `output/index.html` | Direct host access | **Docker Deployment** (via Volume mount, visible on host) |
 | `index.html` | Root directory access | **GitHub Pages** (repository root, auto-detected by Pages) |
-| `output/html/YYYY-MM-DD/当日汇总.html` | Historical reports | All environments (archived by date) |
+| `output/html/latest/{mode}.html` | Latest report for a mode | `daily`, `current`, or `incremental`, after that mode has run |
+| `output/html/YYYY-MM-DD/HH-MM.html` | Historical reports | All environments (archived by date and time) |
 
 **Local Access Examples**:
 ```bash
@@ -2955,7 +2994,7 @@ start ./output/index.html            # Windows
 xdg-open ./output/index.html         # Linux
 
 # Method 3: Access historical archives
-open ./output/html/2025-xx-xx/当日汇总.html
+open ./output/html/2025-01-15/09-30.html  # Replace with an existing snapshot
 ```
 
 **Why two index.html files?**
@@ -3013,7 +3052,7 @@ Use docker compose to start both news push and MCP services:
 
 ```bash
 # Clone project (Recommended)
-git clone https://github.com/sansan0/TrendRadar.git
+git clone https://github.com/CT-Infrastructure/TrendRadar.git
 cd TrendRadar/docker
 docker compose up -d
 
@@ -3077,6 +3116,8 @@ After MCP service starts, configure based on your client:
 > 💡 **Tip**: MCP service only listens on local port (127.0.0.1) for security. For remote access, configure reverse proxy and authentication yourself.
 
 </details>
+
+<a id="7-report-configuration"></a>
 
 ### 7. How is the push content displayed?
 
@@ -3237,6 +3278,8 @@ Hacker News (5 items):
 
 </details>
 
+<a id="8-push-window-configuration"></a>
+
 ### 8. When will I receive pushes?
 
 <details>
@@ -3284,6 +3327,8 @@ If none of the preset templates fit your needs, edit the `custom` section at the
 
 </details>
 
+<a id="9-execution-frequency-configuration"></a>
+
 ### 9. How often does it run?
 
 <details>
@@ -3330,6 +3375,8 @@ GitHub Actions uses a time format called "Cron". You don't need to understand it
 4. Click the green **Commit changes** button to save.
 
 </details>
+
+<a id="10-multiple-account-push-configuration"></a>
 
 ### 10. Push to multiple groups/devices
 
@@ -3387,6 +3434,8 @@ TELEGRAM_CHAT_ID=userA;userB
 </details>
 
 <br>
+
+<a id="11-storage-configuration-v400-new"></a>
 
 ### 11. Where is the data saved?
 
@@ -3504,7 +3553,7 @@ If you subscribe to foreign RSS feeds (like Hacker News), AI can translate the c
 ```yaml
 ai_translation:
   enabled: true          # Enable translation
-  language: "Chinese"    # Target language (Chinese, English, Japanese...)
+  language: "English"    # Target language (English, Chinese, Japanese...)
 ```
 
 #### Advanced: Customize AI "Persona"
@@ -3566,7 +3615,7 @@ Cherry Studio provides GUI config interface, 5-minute quick deployment, complex 
 
 > 💡 **Tip**: Actually not recommended to ask multiple questions at once. If your chosen AI model cannot even sequentially call as shown below, suggest switching models.
 
-<img src="/_image/ai4.png" alt="MCP usage effect" width="600">
+<img src="_image/ai4.png" alt="MCP usage effect" width="600">
 
 <br>
 

@@ -12,7 +12,7 @@ def handle_status_commands(config: Dict) -> None:
     ctx = AppContext(config)
 
     print("=" * 60)
-    print(f"TrendRadar v{__version__} 调度状态")
+    print(f"TrendRadar v{__version__} Schedule status")
     print("=" * 60)
 
     try:
@@ -22,38 +22,38 @@ def handle_status_commands(config: Dict) -> None:
         now = ctx.get_time()
         date_str = ctx.format_date()
 
-        print(f"\n⏰ 当前时间: {now.strftime('%Y-%m-%d %H:%M:%S')} ({ctx.timezone})")
-        print(f"📅 当前日期: {date_str}")
+        print(f"\n⏰ Current time: {now.strftime('%Y-%m-%d %H:%M:%S')} ({ctx.timezone})")
+        print(f"📅 Current date: {date_str}")
 
-        print(f"\n📋 调度信息:")
-        print(f"  日计划: {schedule.day_plan}")
+        print(f"\n📋 Schedule details:")
+        print(f"  Day plan: {schedule.day_plan}")
         if schedule.period_key:
-            print(f"  当前时间段: {schedule.period_name or schedule.period_key} ({schedule.period_key})")
+            print(f"  Current period: {schedule.period_name or schedule.period_key} ({schedule.period_key})")
         else:
-            print(f"  当前时间段: 无（使用默认配置）")
+            print(f"  Current period: none (using defaults)")
 
-        print(f"\n🔧 行为开关:")
-        print(f"  采集数据: {'✅ 是' if schedule.collect else '❌ 否'}")
-        print(f"  AI 分析:  {'✅ 是' if schedule.analyze else '❌ 否'}")
-        print(f"  推送通知: {'✅ 是' if schedule.push else '❌ 否'}")
-        print(f"  报告模式: {schedule.report_mode}")
-        print(f"  AI 模式:  {schedule.ai_mode}")
+        print(f"\n🔧 Enabled actions:")
+        print(f"  Collect data: {'✅ Yes' if schedule.collect else '❌ No'}")
+        print(f"  AI analysis:  {'✅ Yes' if schedule.analyze else '❌ No'}")
+        print(f"  Send notifications: {'✅ Yes' if schedule.push else '❌ No'}")
+        print(f"  Report mode: {schedule.report_mode}")
+        print(f"  AI mode:  {schedule.ai_mode}")
 
         if schedule.period_key:
-            print(f"\n🔁 一次性控制:")
+            print(f"\n🔁 Run-once controls:")
             if schedule.once_analyze:
                 already_analyzed = scheduler.already_executed(schedule.period_key, "analyze", date_str)
-                print(f"  AI 分析:  仅一次 {'(今日已执行 ⚠️)' if already_analyzed else '(今日未执行 ✅)'}")
+                print(f"  AI analysis:  Once only {'(already run today ⚠️)' if already_analyzed else '(not yet run today ✅)'}")
             else:
-                print(f"  AI 分析:  不限次数")
+                print(f"  AI analysis:  Unlimited")
             if schedule.once_push:
                 already_pushed = scheduler.already_executed(schedule.period_key, "push", date_str)
-                print(f"  推送通知: 仅一次 {'(今日已执行 ⚠️)' if already_pushed else '(今日未执行 ✅)'}")
+                print(f"  Send notifications: Once only {'(already run today ⚠️)' if already_pushed else '(not yet run today ✅)'}")
             else:
-                print(f"  推送通知: 不限次数")
+                print(f"  Send notifications: Unlimited")
 
     except Exception as e:
-        print(f"\n❌ 获取调度状态失败: {e}")
+        print(f"\n❌ Failed to retrieve schedule status: {e}")
 
     print("\n" + "=" * 60)
 

@@ -9,6 +9,18 @@ import re
 from typing import Dict, List, Optional
 
 
+def english_report_type(report_type: str) -> str:
+    """Translate built-in legacy labels while preserving custom report names."""
+    return {
+        "全天汇总": "Daily Summary",
+        "当日汇总": "Daily Summary",
+        "当前榜单": "Current Ranking",
+        "增量分析": "Incremental Update",
+        "热点分析报告": "Trend Analysis Report",
+        "通知连通性测试": "Notification Test",
+    }.get(report_type, report_type)
+
+
 def clean_title(title: str) -> str:
     """清理标题中的特殊字符
 

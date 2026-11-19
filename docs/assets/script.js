@@ -55,7 +55,7 @@ function getQrModalData() {
             title: t('qr.weixin.title'),
             subtitle: t('qr.weixin.subtitle'),
             img: './assets/weixin.webp',
-            alt: '微信公众号',
+            alt: 'WeChat public account',
             hint: t('qr.weixin.hint')
         },
         donate: {
@@ -64,7 +64,7 @@ function getQrModalData() {
             title: t('qr.donate.title'),
             subtitle: t('qr.donate.subtitle'),
             img: 'https://cdn-1258574687.cos.ap-shanghai.myqcloud.com/img/%2F2026%2F01%2F18ecce7c224ce0ea4c59394c29e408f8-e0d1db45.webp',
-            alt: '微信支付',
+            alt: 'WeChat Pay',
             hint: t('qr.donate.hint')
         }
     };
@@ -109,9 +109,9 @@ const MODULE_DEFS = [
 
 // 初始默认内容 (用于空状态) - 只显示提示文本
 function getInitialYaml() { return t('init.configPlaceholder'); }
-const INITIAL_YAML = `# 在此粘贴你的 config.yaml...
-# 或拖拽文件到编辑器区域
-# 或点击右上角"加载官网最新配置"`;
+const INITIAL_YAML = `# Paste your config.yaml here...
+# Or drag a file into the editor
+# Or click "Load Latest Config" at top right`;
 
 // LocalStorage 键名
 const STORAGE_KEY_CONFIG = 'trendradar_config_yaml';
@@ -121,37 +121,35 @@ const STORAGE_KEY_CONFIG_TIME = 'trendradar_config_time';
 const STORAGE_KEY_FREQUENCY_TIME = 'trendradar_frequency_time';
 const STORAGE_KEY_TIMELINE_TIME = 'trendradar_timeline_time';
 
-// 官网配置文件 URL（GitHub 主源）
-const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/sansan0/TrendRadar/refs/heads/master/';
+// This fork provides the default configuration files.
+const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/CT-Infrastructure/TrendRadar/refs/heads/master/';
 const REMOTE_VERSION_URL = GITHUB_RAW_BASE + 'version_configs';
 
-// 远程配置文件路径随当前语言切换：中文用 config.yaml，英文用 config.en.yaml 等
-// 仅文件名不同，复用同一上游仓库与 CDN 回退源
+// Load the defaults from this checkout; changing UI language does not replace user configuration.
 function remoteConfigPath(type) {
-    const en = (typeof getLang === 'function' && getLang() === 'en');
-    const suffix = en ? '.en' : '';
-    const names = {
-        config: 'config/config' + suffix + '.yaml',
-        frequency: 'config/frequency_words' + suffix + '.txt',
-        timeline: 'config/timeline' + suffix + '.yaml'
-    };
-    return names[type];
+    // The editor loads this checkout's defaults independently of the UI language.
+    return {
+        config: 'config/config.yaml',
+        frequency: 'config/frequency_words.txt',
+        timeline: 'config/timeline.yaml'
+    }[type];
 }
-// 当前语言对应的完整远程配置 URL（供 fetchWithFallback 使用，须以 GITHUB_RAW_BASE 开头）
+// Canonical URL used by the local-first fallback loader.
 function remoteConfigUrl(type) {
     return GITHUB_RAW_BASE + remoteConfigPath(type);
 }
-// 当前语言对应的配置文件名（用于弹窗展示与提示，如 "config.yaml" / "config.en.yaml"）
+// Display the configuration filename in dialogs and status messages.
 function remoteConfigName(type) {
     return remoteConfigPath(type).split('/').pop();
 }
 
-// 所有源（GitHub 主源 + CDN 备用源），按优先级排列
+// Prefer this checkout, then this fork on GitHub and its CDN mirrors.
 const ALL_SOURCES = [
+    new URL('../', window.location.href).href,
     GITHUB_RAW_BASE,
-    'https://fastly.jsdelivr.net/gh/sansan0/TrendRadar@master/',
-    'https://cdn.jsdelivr.net/gh/sansan0/TrendRadar@master/',
-    'https://gcore.jsdelivr.net/gh/sansan0/TrendRadar@master/',
+    'https://fastly.jsdelivr.net/gh/CT-Infrastructure/TrendRadar@master/',
+    'https://cdn.jsdelivr.net/gh/CT-Infrastructure/TrendRadar@master/',
+    'https://gcore.jsdelivr.net/gh/CT-Infrastructure/TrendRadar@master/',
 ];
 let lastOkIndex = 0;
 
@@ -179,7 +177,7 @@ async function fetchWithFallback(url, timeout = 5000) {
             const resp = await fetchWithTimeout(ALL_SOURCES[idx] + path, timeout);
             if (resp.ok) {
                 if (idx !== lastOkIndex) {
-                    console.log(`[CDN] 已切换到: ${ALL_SOURCES[idx].split('//')[1].split('/')[0]}`);
+                    console.log(`[Config] Switched source to: ${ALL_SOURCES[idx].split('//')[1].split('/')[0]}`);
                 }
                 lastOkIndex = idx;
                 return resp;
@@ -463,7 +461,7 @@ function _saveToStorage(content, storageKey, timeKey, label) {
             updateSaveTimeDisplay();
         }
     } catch (e) {
-        console.warn(`LocalStorage 保存 ${label} 失败:`, e);
+        console.warn(`Failed to save ${label} in localStorage:`, e);
     }
 }
 
@@ -692,7 +690,7 @@ window.confirmLoadConfig = async function() {
         showToast(t('toast.loaded') + loadedFiles.join(', '), 'success');
 
     } catch (err) {
-        console.error('加载远程配置失败:', err);
+        console.error('Failed to load remote configuration:', err);
         showToast(t('toast.loadFailed') + err.message, 'error');
     }
 }
@@ -1674,7 +1672,7 @@ function buildFrequencyText(data) {
 
     // 如果没有原始文本，使用默认模板
     let text = '# ═══════════════════════════════════════════════════════════════\n';
-    text += '#                    TrendRadar 频率词配置文件\n';
+    text += '#                    TrendRadar Keyword Configuration\n';
     text += '# ═══════════════════════════════════════════════════════════════\n\n';
 
     text += '[GLOBAL_FILTER]\n';
@@ -2386,36 +2384,29 @@ window.openDeepSeekAI = function(type, groupIndex) {
     const userInput = window.prompt(t('prompt.enterCoreKeyword'));
     if (!userInput) return;
 
-    const promptText = `我正在配置一个新闻聚合系统，需要通过 Python 正则表达式 抓取关于【${userInput}】的新闻。
+    const promptText = `I am configuring a news aggregator and need a Python regular expression to match news about ${userInput}.
 
-请帮我完成以下步骤，并最终只输出一个正则表达式字符串：
+Work through these steps, then output only the final regular expression:
 
-第一步：【精准关键词筛选】
-请列出与【${userInput}】强绑定的核心词汇：
-1. 核心品牌：包括中文全称、简称、股票代码、别名。
-2. 核心人物：仅限最高决策层或极具代表性的创始人。
-3. 独家产品：必须是具有极高辨识度的独家产品名。
-4. 核心工作室/子品牌：强相关的下属机构。
+1. Select precise keywords strongly associated with ${userInput}:
+   - Brand names: full names, abbreviations, stock symbols, aliases, and relevant local-language names.
+   - Key people: only senior decision-makers or distinctive founders.
+   - Exclusive products: distinctive product names tied directly to the subject.
+   - Subsidiaries and studios: only closely related organizations.
 
-第二步：【严格清洗与过滤】（请严格执行）
-1. 包含关系去重（最短匹配原则）：
-   - 中文：如果列表里已经有了核心短词（如“腾讯”），请删除所有包含该短词的长词（如“腾讯云”、“腾讯视频”统统不要，因为它们会被短词命中）。
-   - 英文：如果有了 \\bKeyword\\b，就不要再出现 Keyword。
-2. 彻底排除无关公司：
-   - 绝对不要包含：该品牌的竞争对手、合作伙伴（如京东、美团、字节跳动等非隶属公司）。
-3. 彻底排除通用黑话：
-   - 绝对不要包含：行业通用词（如“互联网”、“大厂”、“新质生产力”、“人工智能”、“元宇宙”、“金融科技”等）。
+2. Clean and filter strictly:
+   - Remove longer terms already matched by a shorter term. For Chinese text, retain the shortest reliable keyword. For English, do not duplicate a word already covered by \\bKeyword\\b.
+   - Exclude competitors, partners, and unrelated companies.
+   - Exclude generic industry terms such as internet, AI, metaverse, and fintech unless they are themselves the requested subject.
 
-第三步：【构建 Python 正则】
-将清洗后的词汇合并，格式要求如下：
-1. 英文处理：所有英文单词必须前后加 \\b（例如 \\bWord\\b），严禁出现没有边界符的英文单词。
-2. 连接符：用 | 连接。
+3. Build a Python regular expression:
+   - Surround each English word with \\b word boundaries, for example \\bWord\\b.
+   - Join alternatives with |.
 
-最终输出示例格式：
-/词A|词B|\\bEnglishWord\\b/ => ${userInput}
+Output format:
+/keywordA|keywordB|\\bEnglishWord\\b/ => ${userInput}
 
-输出要求：
-- 只要这一行正则表达式，不要任何解释，不要代码块。`;
+Return exactly one line, without explanations or a code block.`;
 
     const textArea = document.createElement("textarea");
     textArea.value = promptText;
@@ -2432,7 +2423,7 @@ window.openDeepSeekAI = function(type, groupIndex) {
     try {
         copySuccess = document.execCommand('copy');
     } catch (err) {
-        console.error('复制失败:', err);
+        console.error('Copy failed:', err);
     }
 
     document.body.removeChild(textArea);
@@ -3347,7 +3338,7 @@ window.checkVersion = async function() {
         showVersionComparisonModal(fileName, currentVersion, latestVersion);
 
     } catch (err) {
-        console.error('版本检测失败:', err);
+        console.error('Version check failed:', err);
         showToast(t('toast.versionCheckFailed') + err.message, 'error');
     } finally {
         btn.innerHTML = originalHTML;
@@ -3695,7 +3686,7 @@ window.updateToLatest = async function() {
         showToast(t('toast.updatedToLatest'), 'success');
 
     } catch (err) {
-        console.error('更新失败:', err);
+        console.error('Update failed:', err);
         showToast(t('toast.updateFailed') + err.message, 'error');
     }
 }

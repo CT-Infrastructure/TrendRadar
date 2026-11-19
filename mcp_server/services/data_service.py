@@ -17,7 +17,7 @@ from ..utils.errors import DataNotFoundError
 class DataService:
     """数据访问服务类"""
 
-    # 中文停用词列表（用于 auto_extract 模式）
+    # 中文停用词列表（用于 auto_extract  mode)
     STOPWORDS = {
         '的', '了', '在', '是', '我', '有', '和', '就', '不', '人', '都', '一',
         '一个', '上', '也', '很', '到', '说', '要', '去', '你', '会', '着', '没有',
@@ -281,8 +281,8 @@ class DataService:
 
         if not results:
             raise DataNotFoundError(
-                f"未找到包含关键词 '{keyword}' 的新闻",
-                suggestion="请尝试其他关键词或扩大日期范围"
+                f"No news found containing keyword '{keyword}'",
+                suggestion="Try another keyword or a wider date range"
             )
 
         # 计算统计信息
@@ -372,8 +372,8 @@ class DataService:
 
         if not all_titles:
             raise DataNotFoundError(
-                "未找到今天的新闻数据",
-                suggestion="请确保爬虫已经运行并生成了数据"
+                "No news data found for today",
+                suggestion="Make sure the crawler has run and generated data"
             )
 
         # 根据 mode 选择要处理的标题数据
@@ -382,7 +382,7 @@ class DataService:
         elif mode == "current":
             titles_to_process = all_titles  # 简化实现
         else:
-            raise ValueError(f"不支持的模式: {mode}。支持的模式: daily, current")
+            raise ValueError(f"Unsupported mode: {mode}. Supported modes: daily, current")
 
         # 统计词频
         word_frequency = Counter()
@@ -458,14 +458,14 @@ class DataService:
     def _get_mode_description(self, mode: str, extract_mode: str = "keywords") -> str:
         """获取模式描述"""
         mode_desc = {
-            "daily": "当日累计统计",
-            "current": "最新一批统计"
-        }.get(mode, "未知时间模式")
+            "daily": "Daily cumulative statistics",
+            "current": "Latest batch statistics"
+        }.get(mode, "Unknown time mode")
 
         extract_desc = {
-            "keywords": "基于预设关注词",
-            "auto_extract": "自动提取高频词"
-        }.get(extract_mode, "未知提取模式")
+            "keywords": "Based on configured keywords",
+            "auto_extract": "Automatically extracted frequent terms"
+        }.get(extract_mode, "Unknown extraction mode")
 
         return f"{mode_desc} - {extract_desc}"
 

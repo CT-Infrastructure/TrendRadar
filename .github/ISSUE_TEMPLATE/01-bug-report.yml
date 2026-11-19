@@ -1,95 +1,94 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-issue-forms.json
 
-name: 🐛 遇到问题了
-description: 程序运行不正常、报错或功能失效（含 AI 分析问题）
-title: "[问题] "
+name: 🐛 Report a problem
+description: Errors, unexpected behavior, or broken features, including AI analysis
+title: "[Bug] "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        ### ⚠️ 提交前必读
-        **请确保你正在使用 TrendRadar 的最新版本。**
-        很多问题在最新代码中可能已经修复。如果你使用的是旧版本，我将无法处理，请先更新后再试。
+        ### Before submitting
+        **Please use the latest version of this TrendRadar fork.**
+        The problem may already be fixed in newer code. Update your installation and try again first.
 
-        **简单的描述 + 关键截图** 是最有效的沟通方式。
+        A concise description and a useful screenshot make the problem easier to diagnose.
 
-        ---
-        ### 📌 如何查看版本号？
+        ### How to find your version
 
-        | 部署方式 | 查看方法 |
-        |---------|---------|
-        | **Docker** | 查看容器启动日志，版本号显示在日志开头 |
-        | **GitHub Actions** | 查看 [README 文档](https://github.com/sansan0/TrendRadar) 顶部的 ![version](https://img.shields.io/badge/version-blue) 徽章 |
-        | **本地 Python** | 查看项目根目录的 `version` 文件 |
+        | Deployment | Where to look |
+        |------------|---------------|
+        | **Docker** | The version appears at the start of the container logs |
+        | **GitHub Actions** | Check the version badge in the [README](https://github.com/CT-Infrastructure/TrendRadar), or the commit used by the workflow |
+        | **Local Python** | Read the `version` file in the project root |
 
   - type: input
     id: version
     attributes:
-      label: 📦 TrendRadar 版本
+      label: 📦 TrendRadar version
       description: |
-        请务必提供版本号（如：v5.2.0 或 git commit id）
-        💡 Docker 用户：查看容器启动日志 | GitHub Actions 用户：查看文档顶部 version 徽章
-      placeholder: v5.2.0 或 commit hash
+        Include the version number, such as v6.11.0, or the Git commit hash.
+        Docker users can check startup logs; Actions users can check the workflow's commit.
+      placeholder: v6.11.0 or commit hash
     validations:
       required: true
 
   - type: input
     id: mcp-version
     attributes:
-      label: 🔌 MCP Server 版本 (可选)
-      description: 如果你是通过 MCP 使用，请填写 MCP Server 的版本。
-      placeholder: v3.1.6 (非 MCP 用户留空)
+      label: 🔌 MCP server version (optional)
+      description: If you use TrendRadar through MCP, include the MCP server version.
+      placeholder: v4.1.1 (leave blank if you do not use MCP)
     validations:
       required: false
 
   - type: dropdown
     id: bug-category
     attributes:
-      label: 🏷️ 问题类别
+      label: 🏷️ Problem category
       options:
-        - AI 分析相关（报错、内容异常、提示词失效等）
-        - 数据获取相关（爬不到新闻、平台失效等）
-        - 通知推送相关（收不到消息、推送报错等）
-        - 部署运行相关（Docker、Actions、Python 报错）
-        - 其他
+        - AI analysis (errors, unexpected content, prompt problems)
+        - Data collection (missing news, unavailable platforms)
+        - Notifications (missing messages, delivery errors)
+        - Deployment (Docker, Actions, or Python errors)
+        - Other
     validations:
       required: true
 
   - type: input
     id: ai-model
     attributes:
-      label: 🤖 AI 模型名称（AI 问题必填）
+      label: 🤖 AI model name (needed for AI problems)
       description: |
-        如果是 AI 分析相关问题，请提供你使用的具体模型名称。
-        AI 问题与模型能力密切相关，不同模型表现差异很大。
-      placeholder: "例如：deepseek/deepseek-chat、openai/gpt-4o、gemini/gemini-2.5-flash"
+        For an AI analysis problem, include the exact model name.
+        Model capabilities can affect analysis and tool behavior.
+      placeholder: "For example: deepseek/deepseek-chat, openai/gpt-4o, gemini/gemini-2.5-flash"
     validations:
       required: false
 
   - type: textarea
     id: bug-description
     attributes:
-      label: 📝 描述发生了什么
+      label: 📝 What happened?
       placeholder: |
-        请描述：
-        1. 你在做什么？
-        2. 出现了什么错误？（如果是 AI 问题，请贴出分析失败的错误提示）
-        3. 建议上传一张截图，这比文字更有力！
+        Describe:
+        1. What were you trying to do?
+        2. What happened instead? For AI problems, include the analysis error.
+        3. Add a screenshot if it helps explain the problem.
     validations:
       required: true
 
   - type: textarea
     id: error-logs
     attributes:
-      label: 📋 错误日志/配置（可选）
+      label: 📋 Error logs or configuration (optional)
       description: |
-        贴出相关的错误日志或 config.yaml 片段（记得隐藏 API Key 等敏感信息）
-        💡 Docker 用户：使用 `docker logs trendradar` 查看日志
+        Include relevant logs or a config.yaml excerpt. Remove API keys and other sensitive values.
+        Docker users can view logs with `docker logs trendradar`.
       placeholder: |
-        贴出相关的错误日志或 config.yaml 片段：
+        Paste the relevant logs or config.yaml excerpt:
         ```
-        在这里贴内容...
+        Your excerpt here
         ```
     validations:
       required: false
@@ -97,26 +96,26 @@ body:
   - type: textarea
     id: screenshots
     attributes:
-      label: 📷 截图（强烈建议）
+      label: 📷 Screenshots (recommended)
       description: |
-        ⚠️ **重要提示**：请提供**完整截图**，不要只截取局部！
-        - 错误截图应包含完整的错误信息和上下文
-        - 推送截图应包含完整的消息内容
-        - 配置截图应包含相关配置段的完整内容
+        Include enough context in each screenshot:
+        - Errors should show the full message and surrounding context.
+        - Notification problems should show the complete message.
+        - Configuration problems should show the relevant section.
 
-        局部截图往往缺少关键信息，会导致问题难以定位。
-      placeholder: 拖拽截图到这里，请确保截图完整，包含足够的上下文信息。
+        Cropped screenshots can omit details needed for diagnosis.
+      placeholder: Drag screenshots here, including enough context to understand the problem.
     validations:
       required: false
 
   - type: dropdown
     id: environment
     attributes:
-      label: 🖥️ 使用环境
+      label: 🖥️ Environment
       options:
-        - Docker (本地/NAS)
+        - Docker (local or NAS)
         - GitHub Actions
-        - 本地 Python 运行
-        - MCP Server 客户端 (Cherry Studio等)
+        - Local Python
+        - MCP client (such as Cherry Studio)
     validations:
       required: true

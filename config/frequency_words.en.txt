@@ -3,7 +3,7 @@
 #                         Version: 1.1.0
 # ═══════════════════════════════════════════════════════════════
 
-# Visual config editor: https://sansan0.github.io/TrendRadar/
+# Visual config editor: open docs/index.html from this checkout
 #
 # Lines beginning with # are comments only.
 #
@@ -64,28 +64,28 @@
 #
 # 1. Simplest: a bare keyword
 #    ────────────────────
-#    华为
+#    Huawei
 #
-#    Effect: matches all news containing "华为"
+#    Effect: matches all news containing "Huawei"
 #
 #
 # 2. Multiple keywords grouped together
 #    ────────────────────
-#    华为
-#    鸿蒙
-#    任正非
+#    Huawei
+#    HarmonyOS
+#    Ren Zhengfei
 #
-#    Effect: matches news containing "华为" OR "鸿蒙" OR "任正非"; shown as "华为 / 鸿蒙 / 任正非"
+#    Effect: matches news containing "Huawei" OR "HarmonyOS" OR "Ren Zhengfei"; shown as "Huawei / HarmonyOS / Ren Zhengfei"
 #
 #
 # 3. Name the group (recommended)
 #    ────────────────────
-#    [华为]
-#    华为
-#    鸿蒙
-#    任正非
+#    [Huawei]
+#    Huawei
+#    HarmonyOS
+#    Ren Zhengfei
 #
-#    Effect: same as above, but the display name is "华为" (more concise)
+#    Effect: same as above, but the display name is "Huawei" (more concise)
 #
 #
 # ┌─────────────────────────────────────────────────────────────┐
@@ -94,13 +94,13 @@
 #
 # 4. Match multiple words with a regex (one-liner)
 #    ────────────────────
-#    /华为|鸿蒙|任正非/ => 华为
+#    /Huawei|HarmonyOS|Ren Zhengfei/ => Huawei
 #
-#    Effect: matches news containing "华为" OR "鸿蒙" OR "任正非"; shown as "华为"
+#    Effect: matches news containing "Huawei" OR "HarmonyOS" OR "Ren Zhengfei"; shown as "Huawei"
 #    Note: separate words inside /.../ with |; the part after => is the display name
 #
 #    💡 Don't know regex? Ask the AI:
-#       "Write a regex that matches text containing '华为' or '鸿蒙' or '任正非'.
+#       "Write a regex that matches text containing 'Huawei' or 'HarmonyOS' or 'Ren Zhengfei'.
 #        Format: /regex/ => display_name"
 #
 #
@@ -119,18 +119,18 @@
 # 6. Exclude specific content
 #    ────────────────────
 #    [Apple Inc.]
-#    苹果
-#    !水果
-#    !果园
+#    Apple
+#    !fruit
+#    !orchard
 #
-#    Effect: matches "苹果" but excludes news containing "水果" or "果园"
+#    Effect: matches "Apple" but excludes news containing "fruit" or "orchard"
 #    Note: words starting with ! mean "exclude"
 #
 #
 # 7. Limit the number of items
 #    ────────────────────
 #    [Tech News]
-#    科技
+#    technology
 #    @5
 #
 #    Effect: shows at most 5 matching news items
@@ -139,10 +139,10 @@
 #
 # 8. Require multiple words at once
 #    ────────────────────
-#    +苹果
-#    +发布会
+#    +Apple
+#    +launch
 #
-#    Effect: must contain both "苹果" and "发布会" to match
+#    Effect: must contain both "Apple" and "launch" to match
 #    Note: words starting with + mean "required"
 #
 # ───────────────────────────────────────────────────────────────
@@ -153,7 +153,7 @@
 #                         Companies & Brands
 # ═══════════════════════════════════════════════════════════════
 
-/胖东来|于东来/ => 胖东来
+/胖东来|于东来/ => Pangdonglai
 
 /深度求索|幻方量化|梁文锋|\bDeepSeek\b/ => DeepSeek
 
@@ -170,11 +170,11 @@
 
 /黑神话|冯骥/ => Black Myth: Wukong
 
-/影之刃零|梁其伟/ => Blade of Fate
+/影之刃零|梁其伟/ => Phantom Blade Zero
 
 /三体|流浪地球|刘慈欣|郭帆/ => Three-Body / Wandering Earth
 
-申奥
+申奥 => Shen Ao
 
 /京东|刘强东|\bJD\b|\bJingdong\b/ => JD.com
 
@@ -220,7 +220,7 @@
 
 /俄罗斯|俄国/ => Russia
 
-印度
+印度 => India
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -238,21 +238,21 @@
 
 /水电|雅鲁藏布江/ => Hydropower
 /光伏|太阳能/ => Solar Power
-核能
-能源
+核能 => Nuclear Energy
+能源 => Energy
 
 /自动驾驶|无人驾驶|智驾/ => Autonomous Driving
 
-机器人
+机器人 => Robotics
 /机械狗|四足/ => Robot Dog
-具身智能
+具身智能 => Embodied AI
 
 /月球|登月|火星|宇宙|飞船|航天|空间站|卫星/ => Aerospace
 
 # Frontier tech
-量子
-脑机
-基因
+量子 => Quantum Technology
+脑机 => Brain-computer Interfaces
+基因 => Genetics
 
 # Industrial policy
-生产力
+生产力 => Productivity

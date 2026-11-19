@@ -131,7 +131,7 @@ def load_frequency_words(
         if custom_path.exists():
             frequency_path = custom_path
         else:
-            raise FileNotFoundError(f"频率词文件 {frequency_file} 不存在")
+            raise FileNotFoundError(f"Keyword file {frequency_file} does not exist")
 
     with open(frequency_path, "r", encoding="utf-8") as f:
         content = f.read()

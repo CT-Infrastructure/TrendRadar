@@ -4,7 +4,7 @@
 # ═══════════════════════════════════════════════════════════════
 
 
-# Visual config editor: https://sansan0.github.io/TrendRadar/
+# Visual config editor: open docs/index.html from this checkout
 
 
 # ===============================================================
@@ -33,7 +33,7 @@ app:
 #
 #   always_on       → always on, push as soon as there's anything new
 #   morning_evening → push all day + an evening daily summary (recommended)
-#   office_hours    → three-block workday (onboarding → noon → wrap-up), free incremental on weekends
+#   office_hours    → three-block workday (morning briefing → noon → wrap-up), free incremental on weekends
 #   night_owl       → afternoon brief + late-night full-day summary
 #   custom          → fully custom, see timeline.yaml
 #

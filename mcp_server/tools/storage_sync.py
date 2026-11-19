@@ -101,10 +101,10 @@ class StorageSyncTools:
             )
             return self._remote_backend
         except ImportError:
-            print("[存储同步] 远程存储后端需要安装 boto3: pip install boto3")
+            print("[Storage sync] Remote storage requires boto3: pip install boto3")
             return None
         except Exception as e:
-            print(f"[存储同步] 创建远程后端失败: {e}")
+            print(f"[Storage sync] Could not create remote backend: {e}")
             return None
 
     def _get_local_data_dir(self) -> Path:
@@ -227,8 +227,8 @@ class StorageSyncTools:
                     "success": False,
                     "error": {
                         "code": "REMOTE_NOT_CONFIGURED",
-                        "message": "未配置远程存储",
-                        "suggestion": "请在 config/config.yaml 中配置 storage.remote 或设置环境变量"
+                        "message": "Remote storage is not configured",
+                        "suggestion": "Configure storage.remote in config/config.yaml or set the environment variables"
                     }
                 }
 
@@ -239,8 +239,8 @@ class StorageSyncTools:
                     "success": False,
                     "error": {
                         "code": "REMOTE_BACKEND_FAILED",
-                        "message": "无法创建远程存储后端",
-                        "suggestion": "请检查远程存储配置和 boto3 是否已安装"
+                        "message": "Could not create the remote storage backend",
+                        "suggestion": "Check the remote storage configuration and ensure boto3 is installed"
                     }
                 }
 
@@ -290,15 +290,15 @@ class StorageSyncTools:
                         str(local_db_path)
                     )
                     synced_dates.append(date_str)
-                    print(f"[存储同步] 已拉取: {date_str}")
+                    print(f"[Storage sync] Downloaded: {date_str}")
                 except Exception as e:
                     failed_dates.append({"date": date_str, "error": str(e)})
-                    print(f"[存储同步] 拉取失败 ({date_str}): {e}")
+                    print(f"[Storage sync] Download failed ({date_str}): {e}")
 
             return {
                 "success": True,
                 "summary": {
-                    "description": "远程存储同步结果",
+                    "description": "Remote storage synchronization results",
                     "synced_files": len(synced_dates),
                     "skipped_count": len(skipped_dates),
                     "failed_count": len(failed_dates)
@@ -308,10 +308,10 @@ class StorageSyncTools:
                     "skipped_dates": skipped_dates,
                     "failed_dates": failed_dates
                 },
-                "message": f"成功同步 {len(synced_dates)} 天数据" + (
-                    f"，跳过 {len(skipped_dates)} 天（本地已存在）" if skipped_dates else ""
+                "message": f"Synced {len(synced_dates)} days of data" + (
+                    f"; skipped {len(skipped_dates)} days already stored locally" if skipped_dates else ""
                 ) + (
-                    f"，失败 {len(failed_dates)} 天" if failed_dates else ""
+                    f"; {len(failed_dates)} days failed" if failed_dates else ""
                 )
             }
 
@@ -407,7 +407,7 @@ class StorageSyncTools:
             return {
                 "success": True,
                 "summary": {
-                    "description": "存储配置和状态信息",
+                    "description": "Storage configuration and status",
                     "backend": storage_config.get("backend", "auto")
                 },
                 "data": {
@@ -447,7 +447,7 @@ class StorageSyncTools:
         try:
             data_result = {}
             summary_info = {
-                "description": "可用日期列表",
+                "description": "Available dates",
                 "source": source
             }
 
@@ -482,7 +482,7 @@ class StorageSyncTools:
                         "count": 0,
                         "earliest": None,
                         "latest": None,
-                        "error": "未配置远程存储"
+                        "error": "Remote storage is not configured"
                     }
                 else:
                     remote_backend = self._get_remote_backend()
@@ -512,7 +512,7 @@ class StorageSyncTools:
                             "count": 0,
                             "earliest": None,
                             "latest": None,
-                            "error": "无法创建远程存储后端"
+                            "error": "Could not create the remote storage backend"
                         }
 
             # 如果同时查询两者，计算差异

@@ -70,10 +70,10 @@ class DataQueryTools:
             return {
                 "success": True,
                 "summary": {
-                    "description": "最新一批爬取的新闻数据",
+                    "description": "Latest batch of crawled news",
                     "total": len(news_list),
                     "returned": len(news_list),
-                    "platforms": platforms or "全部平台"
+                    "platforms": platforms or "All platforms"
                 },
                 "data": news_list
             }
@@ -198,8 +198,8 @@ class DataQueryTools:
                     "success": False,
                     "error": {
                         "code": "INVALID_PARAMETER",
-                        "message": f"不支持的提取模式: {extract_mode}",
-                        "suggestion": "支持的模式: keywords, auto_extract"
+                        "message": f"Unsupported extraction mode: {extract_mode}",
+                        "suggestion": "Supported modes: keywords, auto_extract"
                     }
                 }
 
@@ -267,7 +267,7 @@ class DataQueryTools:
         try:
             # 参数验证 - 默认今天
             if date_range is None:
-                date_range = "今天"
+                date_range = "today"
 
             # 规范化 date_range（处理 JSON 字符串序列化问题）
             date_range = normalize_date_range(date_range)
@@ -275,7 +275,7 @@ class DataQueryTools:
             # 处理 date_range：支持字符串或对象
             if isinstance(date_range, dict):
                 # 范围对象，取 start 日期
-                date_str = date_range.get('start', '今天')
+                date_str = date_range.get('start', 'today')
             else:
                 date_str = date_range
             target_date = validate_date_query(date_str)
@@ -293,12 +293,12 @@ class DataQueryTools:
             return {
                 "success": True,
                 "summary": {
-                    "description": f"按日期查询的新闻（{target_date.strftime('%Y-%m-%d')}）",
+                    "description": f"News queried by date ({target_date.strftime('%Y-%m-%d')})",
                     "total": len(news_list),
                     "returned": len(news_list),
                     "date": target_date.strftime("%Y-%m-%d"),
                     "date_range": date_range,
-                    "platforms": platforms or "全部平台"
+                    "platforms": platforms or "All platforms"
                 },
                 "data": news_list
             }
@@ -353,11 +353,11 @@ class DataQueryTools:
             return {
                 "success": True,
                 "summary": {
-                    "description": f"最近 {days} 天的 RSS 订阅数据" if days > 1 else "最新的 RSS 订阅数据",
+                    "description": f"Last {days} days of RSS feed data" if days > 1 else "Latest RSS feed data",
                     "total": len(rss_list),
                     "returned": len(rss_list),
                     "days": days,
-                    "feeds": feeds or "全部订阅源"
+                    "feeds": feeds or "All feeds"
                 },
                 "data": rss_list
             }
@@ -415,11 +415,11 @@ class DataQueryTools:
             return {
                 "success": True,
                 "summary": {
-                    "description": f"RSS 搜索结果（关键词: {keyword}）",
+                    "description": f"RSS search results (keyword: {keyword})",
                     "total": len(rss_list),
                     "returned": len(rss_list),
                     "keyword": keyword,
-                    "feeds": feeds or "全部订阅源",
+                    "feeds": feeds or "All feeds",
                     "days": days
                 },
                 "data": rss_list
